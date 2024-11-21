@@ -1,0 +1,23 @@
+body {
+    padding-top: 20px;
+}
+
+.navbar {
+    margin-bottom: 20px;
+}
+
+.form-container {
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.menu-item {
+    border: 1px solid #ddd;
+    padding: 10px;
+    margin-bottom: 10px;
+}
+
+#cart {
+    border: 1px solid #ddd;
+    padding: 10px;
+}
