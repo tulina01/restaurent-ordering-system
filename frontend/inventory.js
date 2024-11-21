@@ -17,7 +17,6 @@ function fetchInventory() {
                     <td>${item.name}</td>
                     <td>${item.quantity}</td>
                     <td>${item.unit}</td>
-                    <td>${item.reorderLevel}</td>
                     <td>
                         <button class="btn btn-sm btn-primary" onclick="showUpdateForm('${item._id}')">Edit</button>
                         <button class="btn btn-sm btn-danger" onclick="deleteInventoryItem('${item._id}')">Delete</button>
@@ -34,14 +33,13 @@ function createInventoryItem(event) {
     const name = document.getElementById('name').value;
     const quantity = document.getElementById('quantity').value;
     const unit = document.getElementById('unit').value;
-    const reorderLevel = document.getElementById('reorderLevel').value;
 
     fetch('http://localhost:3000/api/inventory', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ name, quantity, unit, reorderLevel }),
+        body: JSON.stringify({ name, quantity, unit }),
     })
     .then(response => response.json())
     .then(() => {
@@ -59,7 +57,6 @@ function showUpdateForm(id) {
             document.getElementById('updateName').value = item.name;
             document.getElementById('updateQuantity').value = item.quantity;
             document.getElementById('updateUnit').value = item.unit;
-            document.getElementById('updateReorderLevel').value = item.reorderLevel;
             document.getElementById('updateFormContainer').style.display = 'block';
         })
         .catch(error => console.error('Error fetching inventory item:', error));
@@ -71,14 +68,13 @@ function updateInventoryItem(event) {
     const name = document.getElementById('updateName').value;
     const quantity = document.getElementById('updateQuantity').value;
     const unit = document.getElementById('updateUnit').value;
-    const reorderLevel = document.getElementById('updateReorderLevel').value;
 
     fetch(`http://localhost:3000/api/inventory/${id}`, {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ name, quantity, unit, reorderLevel }),
+        body: JSON.stringify({ name, quantity, unit }),
     })
     .then(response => response.json())
     .then(() => {

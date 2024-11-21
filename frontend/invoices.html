@@ -52,10 +52,6 @@
         <h2>Add New Invoice</h2>
         <form id="createForm">
             <div class="mb-3">
-                <label for="invoiceNumber" class="form-label">Invoice Number</label>
-                <input type="text" class="form-control" id="invoiceNumber" required>
-            </div>
-            <div class="mb-3">
                 <label for="supplier" class="form-label">Supplier</label>
                 <select class="form-control" id="supplier" required>
                     <!-- Options will be populated dynamically -->
@@ -77,6 +73,11 @@
                     <option value="Overdue">Overdue</option>
                 </select>
             </div>
+            <div class="mb-3">
+                <label class="form-label">Items</label>
+                <div id="itemsContainer"></div>
+                <button type="button" id="addItemBtn" class="btn btn-secondary mt-2">Add Item</button>
+            </div>
             <button type="submit" class="btn btn-primary">Add Invoice</button>
         </form>
 
@@ -90,6 +91,8 @@
                     <th>Date</th>
                     <th>Total Amount</th>
                     <th>Status</th>
+                    <th>Items</th>
+                    <th>Actions</th>
                 </tr>
             </thead>
             <tbody id="invoicesList">
@@ -102,10 +105,6 @@
             <h2>Update Invoice</h2>
             <form id="updateForm">
                 <input type="hidden" id="updateId">
-                <div class="mb-3">
-                    <label for="updateInvoiceNumber" class="form-label">Invoice Number</label>
-                    <input type="text" class="form-control" id="updateInvoiceNumber" required>
-                </div>
                 <div class="mb-3">
                     <label for="updateSupplier" class="form-label">Supplier</label>
                     <select class="form-control" id="updateSupplier" required>
@@ -127,6 +126,11 @@
                         <option value="Paid">Paid</option>
                         <option value="Overdue">Overdue</option>
                     </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Items</label>
+                    <div id="updateItemsContainer"></div>
+                    <button type="button" id="updateAddItemBtn" class="btn btn-secondary mt-2">Add Item</button>
                 </div>
                 <button type="submit" class="btn btn-primary">Update Invoice</button>
                 <button type="button" class="btn btn-secondary" id="cancelUpdate">Cancel</button>

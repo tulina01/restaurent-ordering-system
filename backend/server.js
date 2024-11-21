@@ -3,12 +3,15 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const path = require('path');
 
 const app = express();
 const port = 3000;
 
 app.use(cors());
 app.use(express.json());
+app.use(express.static(path.join(__dirname, 'public')));
+
 
 mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true });
 
@@ -59,11 +62,37 @@ const supplierSchema = new mongoose.Schema({
 });
 
 const invoiceSchema = new mongoose.Schema({
-    order: { type: mongoose.Schema.Types.ObjectId, ref: 'Order' },
-    amount: Number,
-    date: Date,
-    status: String
+    invoiceNumber: { type: String, unique: true },
+    supplier: { type: mongoose.Schema.Types.ObjectId, ref: 'Supplier', required: true },
+    date: { type: Date, required: true },
+    totalAmount: { type: Number, required: true },
+    status: { type: String, required: true },
+    items: [{
+        name: { type: String, required: true },
+        quantity: { type: Number, required: true },
+        price: { type: Number, required: true }
+    }]
 });
+
+const counterSchema = new mongoose.Schema({
+    _id: { type: String, required: true },
+    seq: { type: Number, default: 0 }
+});
+
+invoiceSchema.pre('save', function(next) {
+    const doc = this;
+    Counter.findByIdAndUpdate(
+        { _id: 'invoiceNumber' },
+        { $inc: { seq: 1 } },
+        { new: true, upsert: true }
+    ).then(function(counter) {
+        doc.invoiceNumber = `INV-${counter.seq.toString().padStart(6, '0')}`;
+        next();
+    }).catch(function(error) {
+        return next(error);
+    });
+});
+
 
 const inventoryItemSchema = new mongoose.Schema({
     name: String,
@@ -79,6 +108,7 @@ const Employee = mongoose.model('Employee', employeeSchema);
 const Supplier = mongoose.model('Supplier', supplierSchema);
 const Invoice = mongoose.model('Invoice', invoiceSchema);
 const InventoryItem = mongoose.model('InventoryItem', inventoryItemSchema);
+const Counter = mongoose.model('Counter', counterSchema);
 
 // Root route
 app.get('/', (req, res) => {
@@ -433,7 +463,7 @@ app.delete('/api/suppliers/:id', async (req, res) => {
 // CRUD operations for Invoice
 app.get('/api/invoices', async (req, res) => {
     try {
-        const invoices = await Invoice.find().populate('order');
+        const invoices = await Invoice.find().populate('supplier');
         res.json(invoices);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -444,7 +474,8 @@ app.post('/api/invoices', async (req, res) => {
     const invoice = new Invoice(req.body);
     try {
         const newInvoice = await invoice.save();
-        res.status(201).json(newInvoice);
+        const populatedInvoice = await Invoice.findById(newInvoice._id).populate('supplier');
+        res.status(201).json(populatedInvoice);
     } catch (error) {
         res.status(400).json({ message: error.message });
     }
@@ -452,11 +483,44 @@ app.post('/api/invoices', async (req, res) => {
 
 app.get('/api/invoices/:id', async (req, res) => {
     try {
-        const invoice = await Invoice.findById(req.params.id).populate('order');
+        const invoice = await Invoice.findById(req.params.id).populate('supplier');
         if (invoice == null) {
             return res.status(404).json({ message: 'Invoice not found' });
         }
         res.json(invoice);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+app.put('/api/invoices/:id', async (req, res) => {
+    const { supplier, date, totalAmount, status, items } = req.body;
+
+    if (!items || !items.length) {
+        return res.status(400).json({ message: "Items cannot be empty" });
+    }
+
+    try {
+        const updatedInvoice = await Invoice.findByIdAndUpdate(
+            req.params.id,
+            { supplier, date, totalAmount, status, items },
+            { new: true }
+        ).populate('supplier');
+
+        if (!updatedInvoice) {
+            return res.status(404).json({ message: 'Invoice not found' });
+        }
+
+        res.json(updatedInvoice);
+    } catch (error) {
+        res.status(500).json({ message: 'Error updating invoice', error });
+    }
+});
+
+app.delete('/api/invoices/:id', async (req, res) => {
+    try {
+        await Invoice.findByIdAndDelete(req.params.id);
+        res.json({ message: 'Invoice deleted' });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
