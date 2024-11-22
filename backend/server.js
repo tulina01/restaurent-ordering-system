@@ -471,8 +471,14 @@ app.get('/api/invoices', async (req, res) => {
 });
 
 app.post('/api/invoices', async (req, res) => {
-    const invoice = new Invoice(req.body);
+    const { supplier, date, totalAmount, status, items } = req.body;
+
+    if (!items || items.length === 0) {
+        return res.status(400).json({ message: "Items cannot be empty" });
+    }
+
     try {
+        const invoice = new Invoice({ supplier, date, totalAmount, status, items });
         const newInvoice = await invoice.save();
         const populatedInvoice = await Invoice.findById(newInvoice._id).populate('supplier');
         res.status(201).json(populatedInvoice);
@@ -480,6 +486,7 @@ app.post('/api/invoices', async (req, res) => {
         res.status(400).json({ message: error.message });
     }
 });
+
 
 app.get('/api/invoices/:id', async (req, res) => {
     try {
