@@ -4,9 +4,13 @@ const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const path = require('path');
+const bodyParser = require('body-parser');
+
+
 
 const app = express();
 const port = 3000;
+app.use(bodyParser.json());
 
 app.use(cors());
 app.use(express.json());
@@ -19,8 +23,19 @@ mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTop
 const menuItemSchema = new mongoose.Schema({
     name: String,
     description: String,
-    price: Number
+    price: Number,
+    imageUrl: String,
+    category: {
+        type: String,
+        enum: ['Beverages', 'Desserts', 'Main Course', 'Starters'], // Restricting to specified categories
+        required: true,
+    },
 });
+
+
+
+
+
 
 const customerSchema = new mongoose.Schema({
     name: String,
@@ -149,7 +164,11 @@ app.get('/api/menu-items/:id', async (req, res) => {
 
 app.put('/api/menu-items/:id', async (req, res) => {
     try {
-        const updatedMenuItem = await MenuItem.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        const updatedMenuItem = await MenuItem.findByIdAndUpdate(
+            req.params.id,
+            req.body,
+            { new: true, runValidators: true } // Ensure new data is returned and validated
+        );
         res.json(updatedMenuItem);
     } catch (error) {
         res.status(400).json({ message: error.message });

@@ -21,3 +21,77 @@ body {
     border: 1px solid #ddd;
     padding: 10px;
 }
+
+/* Custom styles for the form */
+#createForm {
+    max-width: 800px;
+    margin: auto;
+}
+
+#createForm .form-control:focus,
+#createForm .form-select:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.1);
+}
+
+#createForm .form-floating > label {
+    padding-left: 1.5rem;
+}
+
+#createForm .form-control,
+#createForm .form-select {
+    transition: all 0.3s ease;
+}
+
+#createForm .form-control:hover,
+#createForm .form-select:hover {
+    background-color: #f8f9fa !important;
+}
+
+#createForm .btn {
+    transition: all 0.3s ease;
+}
+
+#createForm .btn:hover {
+    transform: translateY(-1px);
+}
+
+
+
+/* Custom styles for the update form */
+#updateForm .form-control:focus,
+#updateForm .form-select:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.1);
+}
+
+#updateForm .form-floating > label {
+    padding-left: 1.5rem;
+}
+
+#updateForm .form-control,
+#updateForm .form-select {
+    transition: all 0.3s ease;
+}
+
+#updateForm .form-control:hover,
+#updateForm .form-select:hover {
+    background-color: #f8f9fa !important;
+}
+
+#updateForm .btn {
+    transition: all 0.3s ease;
+}
+
+#updateForm .btn:hover {
+    transform: translateY(-1px);
+}
+
+.modal-content {
+    border-radius: 1rem;
+    overflow: hidden;
+}
+
+.modal.fade .modal-dialog {
+    transition: transform 0.3s ease-out;
+}
