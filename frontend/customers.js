@@ -48,13 +48,25 @@ function createCustomer(event) {
         body: JSON.stringify({ name, email, phone, address, password }),
     })
         .then(response => response.json())
-        .then(() => {
-            fetchCustomers();
-            document.getElementById('createForm').reset();
+        .then((data) => {
+            if (data.customer) {
+                alert('Customer created successfully and welcome email sent!');
+                fetchCustomers();
+                document.getElementById('createForm').reset();
+            } else {
+                throw new Error(data.message);
+            }
         })
-        .catch(error => console.error('Error creating customer:', error));
+        .catch(error => {
+            console.error('Error creating customer:', error);
+            alert('Error creating customer: ' + error.message);
+        });
 }
 
+// Initialize the Bootstrap modal
+const updateModal = new bootstrap.Modal(document.getElementById('updateModal'));
+
+// Update the showUpdateForm function
 function showUpdateForm(id) {
     fetch(`http://localhost:3000/api/customers/${id}`)
         .then(response => response.json())
@@ -63,9 +75,9 @@ function showUpdateForm(id) {
             document.getElementById('updateName').value = customer.name;
             document.getElementById('updateEmail').value = customer.email;
             document.getElementById('updatePhone').value = customer.phone;
-            document.getElementById('updateAddress').value = customer.address || '';
-            document.getElementById('updatePassword').value = customer.password || '';
-            document.getElementById('updateFormContainer').style.display = 'block';
+            document.getElementById('updateAddress').value = customer.address;
+            document.getElementById('updatePassword').value = customer.password;
+            updateModal.show();
         })
         .catch(error => console.error('Error fetching customer:', error));
 }
@@ -103,11 +115,16 @@ function deleteCustomer(id) {
             .catch(error => console.error('Error deleting customer:', error));
     }
 }
-
+// Update the cancelUpdate function
 function cancelUpdate() {
     document.getElementById('updateForm').reset();
-    document.getElementById('updateFormContainer').style.display = 'none';
+    updateModal.hide();
 }
+
+// Add event listener for modal close
+document.getElementById('updateModal').addEventListener('hidden.bs.modal', function () {
+    document.getElementById('updateForm').reset();
+});
 
 function generatePassword() {
     const password = Math.random().toString(36).slice(-8);
@@ -117,4 +134,26 @@ function generatePassword() {
 function generatePasswordForUpdate() {
     const password = Math.random().toString(36).slice(-8);
     document.getElementById('updatePassword').value = password;
+}
+
+function renderCustomerRow(customer) {
+    return `
+        <tr>
+            <td class="px-4">${customer.name}</td>
+            <td class="px-4">${customer.email}</td>
+            <td class="px-4">${customer.phone}</td>
+            <td class="px-4">${customer.address}</td>
+            <td class="px-4">
+                <span class="badge bg-light text-dark">********</span>
+            </td>
+            <td class="px-4 text-end">
+                <button class="btn btn-sm btn-outline-primary me-2" onclick="showUpdateForm('${customer._id}')">
+                    <i class="bi bi-pencil"></i>
+                </button>
+                <button class="btn btn-sm btn-outline-danger" onclick="deleteCustomer('${customer._id}')">
+                    <i class="bi bi-trash"></i>
+                </button>
+            </td>
+        </tr>
+    `;
 }

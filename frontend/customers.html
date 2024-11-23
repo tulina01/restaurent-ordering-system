@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-success">
       <div class="container-fluid">
         <a class="navbar-brand" href="admin-dashboard.html">Restaurant Admin</a>
         <button
@@ -56,126 +56,277 @@
       </div>
     </nav>
 
-    <div class="container mt-4">
-      <h1>Customers Management</h1>
+    <div class="container mt-5">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-success fw-bold">
+          <i class="bi bi-people-fill me-2"></i>Customers Management
+        </h2>
+      </div>
 
       <!-- Create Form -->
-      <h2>Add New Customer</h2>
-      <form id="createForm">
-        <div class="mb-3">
-          <label for="name" class="form-label">Name</label>
-          <input type="text" class="form-control" id="name" required />
+      <div class="card shadow-sm border-0 rounded-lg mb-5">
+        <div class="card-header bg-light border-0 py-3">
+          <h5 class="card-title mb-0 fw-bold">
+            <i class="bi bi-person-plus me-2"></i>Add New Customer
+          </h5>
         </div>
-        <div class="mb-3">
-          <label for="email" class="form-label">Email</label>
-          <input type="email" class="form-control" id="email" required />
-        </div>
-        <div class="mb-3">
-          <label for="phone" class="form-label">Phone</label>
-          <input type="tel" class="form-control" id="phone" required />
-        </div>
-        <div class="mb-3">
-          <label for="address" class="form-label">Address</label>
-          <textarea
-            class="form-control"
-            id="address"
-            rows="3"
-            required
-          ></textarea>
-        </div>
-        <div class="mb-3">
-          <label for="password" class="form-label">Password</label>
-          <div class="input-group">
-            <input
-              type="password"
-              class="form-control"
-              id="password"
-              required
-            />
-            <button
-              type="button"
-              class="btn btn-outline-secondary"
-              id="generatePassword"
-            >
-              Generate
-            </button>
-          </div>
-        </div>
-        <button type="submit" class="btn btn-primary">Add Customer</button>
-      </form>
+        <div class="card-body p-4">
+          <form id="createForm">
+            <div class="row g-3">
+              <!-- Name and Email -->
+              <div class="col-md-6">
+                <div class="form-floating mb-3">
+                  <input
+                    type="text"
+                    class="form-control border-0 bg-light"
+                    id="name"
+                    placeholder="Name"
+                    required
+                  />
+                  <label for="name" class="text-muted">
+                    <i class="bi bi-person me-2"></i>Name
+                  </label>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="form-floating mb-3">
+                  <input
+                    type="email"
+                    class="form-control border-0 bg-light"
+                    id="email"
+                    placeholder="Email"
+                    required
+                  />
+                  <label for="email" class="text-muted">
+                    <i class="bi bi-envelope me-2"></i>Email
+                  </label>
+                </div>
+              </div>
 
-      <!-- List of Customers -->
-      <h2 class="mt-4">Existing Customers</h2>
-      <table class="table">
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Email</th>
-            <th>Phone</th>
-            <th>Address</th>
-            <th>Password</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody id="customersList">
-          <!-- Customers will be dynamically added here -->
-        </tbody>
-      </table>
+              <!-- Phone and Password -->
+              <div class="col-md-6">
+                <div class="form-floating mb-3">
+                  <input
+                    type="tel"
+                    class="form-control border-0 bg-light"
+                    id="phone"
+                    placeholder="Phone"
+                    required
+                  />
+                  <label for="phone" class="text-muted">
+                    <i class="bi bi-telephone me-2"></i>Phone
+                  </label>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="input-group mb-3">
+                  <div class="form-floating flex-grow-1">
+                    <input
+                      type="password"
+                      class="form-control border-0 bg-light"
+                      id="password"
+                      placeholder="Password"
+                      required
+                    />
+                    <label for="password" class="text-muted">
+                      <i class="bi bi-lock me-2"></i>Password
+                    </label>
+                  </div>
+                  <button
+                    type="button"
+                    class="btn btn-outline-success"
+                    id="generatePassword"
+                  >
+                    <i class="bi bi-key me-2"></i>Generate
+                  </button>
+                </div>
+              </div>
 
-      <!-- Update Form (initially hidden) -->
-      <div id="updateFormContainer" style="display: none">
-        <h2>Update Customer</h2>
-        <form id="updateForm">
-          <input type="hidden" id="updateId" />
-          <div class="mb-3">
-            <label for="updateName" class="form-label">Name</label>
-            <input type="text" class="form-control" id="updateName" required />
-          </div>
-          <div class="mb-3">
-            <label for="updateEmail" class="form-label">Email</label>
-            <input
-              type="email"
-              class="form-control"
-              id="updateEmail"
-              required
-            />
-          </div>
-          <div class="mb-3">
-            <label for="updatePhone" class="form-label">Phone</label>
-            <input type="tel" class="form-control" id="updatePhone" required />
-          </div>
-          <div class="mb-3">
-            <label for="updateAddress" class="form-label">Address</label>
-            <textarea
-              class="form-control"
-              id="updateAddress"
-              rows="3"
-              required
-            ></textarea>
-          </div>
-          <div class="mb-3">
-            <label for="updatePassword" class="form-label">Password</label>
-            <div class="input-group">
-              <input
-                type="password"
-                class="form-control"
-                id="updatePassword"
-                required
-              />
+              <!-- Address -->
+              <div class="col-12">
+                <div class="form-floating mb-3">
+                  <textarea
+                    class="form-control border-0 bg-light"
+                    id="address"
+                    placeholder="Address"
+                    style="height: 100px"
+                    required
+                  ></textarea>
+                  <label for="address" class="text-muted">
+                    <i class="bi bi-geo-alt me-2"></i>Address
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <div class="d-flex justify-content-end gap-2 mt-3">
               <button
                 type="button"
-                class="btn btn-outline-secondary"
-                id="updateGeneratePassword"
+                class="btn btn-light px-4"
+                onclick="this.form.reset()"
               >
-                Generate
+                <i class="bi bi-x-circle me-2"></i>Clear
+              </button>
+              <button type="submit" class="btn btn-success px-4">
+                <i class="bi bi-plus-circle me-2"></i>Add Customer
               </button>
             </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Customers Table -->
+      <div class="card shadow-sm border-0 rounded-lg">
+        <div class="card-header bg-light border-0 py-3">
+          <h5 class="card-title mb-0 fw-bold">
+            <i class="bi bi-table me-2"></i>Existing Customers
+          </h5>
+        </div>
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover mb-0">
+              <thead class="bg-light">
+                <tr>
+                  <th class="px-4 py-3">Name</th>
+                  <th class="px-4 py-3">Email</th>
+                  <th class="px-4 py-3">Phone</th>
+                  <th class="px-4 py-3">Address</th>
+                  <th class="px-4 py-3">Password</th>
+                  <th class="px-4 py-3 text-end">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="customersList">
+                <!-- Customers will be dynamically added here -->
+              </tbody>
+            </table>
           </div>
-          <button type="submit" class="btn btn-primary">Update Customer</button>
-          <button type="button" class="btn btn-secondary" id="cancelUpdate">
-            Cancel
-          </button>
-        </form>
+        </div>
+      </div>
+
+      <!-- Update Modal -->
+      <div
+        class="modal fade"
+        id="updateModal"
+        tabindex="-1"
+        aria-labelledby="updateModalLabel"
+        aria-hidden="true"
+      >
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-light border-0">
+              <h5
+                class="modal-title text-success fw-bold"
+                id="updateModalLabel"
+              >
+                <i class="bi bi-pencil-square me-2"></i>Update Customer
+              </h5>
+              <button
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="modal"
+                aria-label="Close"
+              ></button>
+            </div>
+            <div class="modal-body p-4">
+              <form id="updateForm">
+                <input type="hidden" id="updateId" />
+
+                <!-- Name and Email -->
+                <div class="form-floating mb-3">
+                  <input
+                    type="text"
+                    class="form-control border-0 bg-light"
+                    id="updateName"
+                    placeholder="Name"
+                    required
+                  />
+                  <label for="updateName" class="text-muted">
+                    <i class="bi bi-person me-2"></i>Name
+                  </label>
+                </div>
+
+                <div class="form-floating mb-3">
+                  <input
+                    type="email"
+                    class="form-control border-0 bg-light"
+                    id="updateEmail"
+                    placeholder="Email"
+                    required
+                  />
+                  <label for="updateEmail" class="text-muted">
+                    <i class="bi bi-envelope me-2"></i>Email
+                  </label>
+                </div>
+
+                <!-- Phone -->
+                <div class="form-floating mb-3">
+                  <input
+                    type="tel"
+                    class="form-control border-0 bg-light"
+                    id="updatePhone"
+                    placeholder="Phone"
+                    required
+                  />
+                  <label for="updatePhone" class="text-muted">
+                    <i class="bi bi-telephone me-2"></i>Phone
+                  </label>
+                </div>
+
+                <!-- Password -->
+                <div class="input-group mb-3">
+                  <div class="form-floating flex-grow-1">
+                    <input
+                      type="password"
+                      class="form-control border-0 bg-light"
+                      id="updatePassword"
+                      placeholder="Password"
+                      required
+                    />
+                    <label for="updatePassword" class="text-muted">
+                      <i class="bi bi-lock me-2"></i>Password
+                    </label>
+                  </div>
+                  <button
+                    type="button"
+                    class="btn btn-outline-success"
+                    id="updateGeneratePassword"
+                  >
+                    <i class="bi bi-key me-2"></i>Generate
+                  </button>
+                </div>
+
+                <!-- Address -->
+                <div class="form-floating mb-3">
+                  <textarea
+                    class="form-control border-0 bg-light"
+                    id="updateAddress"
+                    placeholder="Address"
+                    style="height: 100px"
+                    required
+                  ></textarea>
+                  <label for="updateAddress" class="text-muted">
+                    <i class="bi bi-geo-alt me-2"></i>Address
+                  </label>
+                </div>
+
+                <!-- Form Actions -->
+                <div class="d-flex justify-content-end gap-2 mt-4">
+                  <button
+                    type="button"
+                    class="btn btn-light px-4"
+                    data-bs-dismiss="modal"
+                    id="cancelUpdate"
+                  >
+                    <i class="bi bi-x-circle me-2"></i>Cancel
+                  </button>
+                  <button type="submit" class="btn btn-success px-4">
+                    <i class="bi bi-check-circle me-2"></i>Update
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 

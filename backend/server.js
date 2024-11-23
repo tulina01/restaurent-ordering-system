@@ -5,6 +5,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const path = require('path');
 const bodyParser = require('body-parser');
+const nodemailer = require('nodemailer');
 
 
 
@@ -15,6 +16,8 @@ app.use(bodyParser.json());
 app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
+
+
 
 
 mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true });
@@ -189,7 +192,7 @@ app.delete('/api/menu-items/:id', async (req, res) => {
     }
 });
 
-// CRUD operations for Customer
+// Rest of your existing endpoints remain the same
 app.get('/api/customers', async (req, res) => {
     try {
         const customers = await Customer.find();
@@ -203,9 +206,19 @@ app.post('/api/customers', async (req, res) => {
     const customer = new Customer(req.body);
     try {
         const newCustomer = await customer.save();
-        res.status(201).json(newCustomer);
+        
+        // Send welcome email
+        await sendWelcomeEmail(req.body);
+        
+        res.status(201).json({
+            customer: newCustomer,
+            message: 'Customer created and welcome email sent successfully'
+        });
     } catch (error) {
-        res.status(400).json({ message: error.message });
+        res.status(400).json({ 
+            message: error.message,
+            emailError: error.emailError || false 
+        });
     }
 });
 
@@ -238,6 +251,45 @@ app.delete('/api/customers/:id', async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 });
+
+// Configure nodemailer
+const transporter = nodemailer.createTransport({
+    service: 'gmail',  // or your preferred email service
+    auth: {
+        user: 'managementsystem56@gmail.com', // your email
+        pass: '' // your app-specific password
+    }
+});
+
+// Email sending function
+async function sendWelcomeEmail(customerData) {
+    const mailOptions = {
+        from: 'your-email@gmail.com',
+        to: customerData.email,
+        subject: 'Welcome to Savory Bites',
+        html: `
+            <h1>Welcome ${customerData.name}!</h1>
+            <p>Thank you for registering with us. Here are your details:</p>
+            <ul>
+                <li><strong>Name:</strong> ${customerData.name}</li>
+                <li><strong>Email:</strong> ${customerData.email}</li>
+                <li><strong>Phone:</strong> ${customerData.phone}</li>
+                <li><strong>Address:</strong> ${customerData.address || 'Not provided'}</li>
+            </ul>
+            <p> password is: ${customerData.password}</p>
+            <p>Use this details to login to system.</p>
+            <p>Best regards,<br>Savory Bites</p>
+        `
+    };
+
+    try {
+        await transporter.sendMail(mailOptions);
+        console.log('Welcome email sent successfully');
+    } catch (error) {
+        console.error('Error sending welcome email:', error);
+        throw error;
+    }
+}
 
 // CRUD operations for Order
 app.get('/api/orders', async (req, res) => {
