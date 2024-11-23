@@ -40,8 +40,13 @@ const menuItemSchema = new mongoose.Schema({
 const customerSchema = new mongoose.Schema({
     name: String,
     email: String,
-    phone: String
+    phone: String,
+    address: String,
+    password: String
 });
+
+module.exports = mongoose.model('Customer', customerSchema);
+
 
 const orderSchema = new mongoose.Schema({
     customer: { type: mongoose.Schema.Types.ObjectId, ref: 'Customer' },
@@ -637,87 +642,87 @@ app.listen(port, () => {
 
 
 // Customer registration
-app.post('/api/customers/register', async (req, res) => {
-    try {
-        const { name, email, password } = req.body;
+// app.post('/api/customers/register', async (req, res) => {
+//     try {
+//         const { name, email, password } = req.body;
 
-        // Check if user already exists
-        let customer = await Customer.findOne({ email });
-        if (customer) {
-            return res.status(400).json({ msg: 'User already exists' });
-        }
+//         // Check if user already exists
+//         let customer = await Customer.findOne({ email });
+//         if (customer) {
+//             return res.status(400).json({ msg: 'User already exists' });
+//         }
 
-        // Create new customer
-        customer = new Customer({
-            name,
-            email,
-            password
-        });
+//         // Create new customer
+//         customer = new Customer({
+//             name,
+//             email,
+//             password
+//         });
 
-        // Hash password
-        const salt = await bcrypt.genSalt(10);
-        customer.password = await bcrypt.hash(password, salt);
+//         // Hash password
+//         const salt = await bcrypt.genSalt(10);
+//         customer.password = await bcrypt.hash(password, salt);
 
-        // Save customer to database
-        await customer.save();
+//         // Save customer to database
+//         await customer.save();
 
-        // Create and return JWT token
-        const payload = {
-            customer: {
-                id: customer.id
-            }
-        };
+//         // Create and return JWT token
+//         const payload = {
+//             customer: {
+//                 id: customer.id
+//             }
+//         };
 
-        jwt.sign(
-            payload,
-            'your_jwt_secret', // Replace with your actual JWT secret
-            { expiresIn: '1h' },
-            (err, token) => {
-                if (err) throw err;
-                res.json({ token });
-            }
-        );
-    } catch (err) {
-        console.error(err.message);
-        res.status(500).send('Server error');
-    }
-});
+//         jwt.sign(
+//             payload,
+//             'your_jwt_secret', // Replace with your actual JWT secret
+//             { expiresIn: '1h' },
+//             (err, token) => {
+//                 if (err) throw err;
+//                 res.json({ token });
+//             }
+//         );
+//     } catch (err) {
+//         console.error(err.message);
+//         res.status(500).send('Server error');
+//     }
+// });
 
 // Customer login
-app.post('/api/customers/login', async (req, res) => {
-    try {
-        const { email, password } = req.body;
+// app.post('/api/customers/login', async (req, res) => {
+//     try {
+//         const { email, password } = req.body;
 
-        // Check if user exists
-        let customer = await Customer.findOne({ email });
-        if (!customer) {
-            return res.status(400).json({ msg: 'Invalid credentials' });
-        }
+//         // Check if user exists
+//         let customer = await Customer.findOne({ email });
+//         if (!customer) {
+//             return res.status(400).json({ msg: 'Invalid credentials' });
+//         }
 
-        // Validate password
-        const isMatch = await bcrypt.compare(password, customer.password);
-        if (!isMatch) {
-            return res.status(400).json({ msg: 'Invalid credentials' });
-        }
+//         // Validate password
+//         const isMatch = await bcrypt.compare(password, customer.password);
+//         if (!isMatch) {
+//             return res.status(400).json({ msg: 'Invalid credentials' });
+//         }
 
-        // Create and return JWT token
-        const payload = {
-            customer: {
-                id: customer.id
-            }
-        };
+//         // Create and return JWT token
+//         const payload = {
+//             customer: {
+//                 id: customer.id
+//             }
+//         };
 
-        jwt.sign(
-            payload,
-            'your_jwt_secret', // Replace with your actual JWT secret
-            { expiresIn: '1h' },
-            (err, token) => {
-                if (err) throw err;
-                res.json({ token });
-            }
-        );
-    } catch (err) {
-        console.error(err.message);
-        res.status(500).send('Server error');
-    }
-});
+//         jwt.sign(
+//             payload,
+//             'your_jwt_secret', // Replace with your actual JWT secret
+//             { expiresIn: '1h' },
+//             (err, token) => {
+//                 if (err) throw err;
+//                 res.json({ token });
+//             }
+//         );
+//     } catch (err) {
+//         console.error(err.message);
+//         res.status(500).send('Server error');
+//     }
+// });

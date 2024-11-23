@@ -3,6 +3,8 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('createForm').addEventListener('submit', createCustomer);
     document.getElementById('updateForm').addEventListener('submit', updateCustomer);
     document.getElementById('cancelUpdate').addEventListener('click', cancelUpdate);
+    document.getElementById('generatePassword').addEventListener('click', generatePassword);
+    document.getElementById('updateGeneratePassword').addEventListener('click', generatePasswordForUpdate);
 });
 
 function fetchCustomers() {
@@ -17,6 +19,8 @@ function fetchCustomers() {
                     <td>${customer.name}</td>
                     <td>${customer.email}</td>
                     <td>${customer.phone}</td>
+                    <td>${customer.address || 'N/A'}</td>
+                    <td>${customer.password || 'N/A'}</td>
                     <td>
                         <button class="btn btn-sm btn-primary" onclick="showUpdateForm('${customer._id}')">Edit</button>
                         <button class="btn btn-sm btn-danger" onclick="deleteCustomer('${customer._id}')">Delete</button>
@@ -33,20 +37,22 @@ function createCustomer(event) {
     const name = document.getElementById('name').value;
     const email = document.getElementById('email').value;
     const phone = document.getElementById('phone').value;
+    const address = document.getElementById('address').value;
+    const password = document.getElementById('password').value;
 
     fetch('http://localhost:3000/api/customers', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ name, email, phone }),
+        body: JSON.stringify({ name, email, phone, address, password }),
     })
-    .then(response => response.json())
-    .then(() => {
-        fetchCustomers();
-        document.getElementById('createForm').reset();
-    })
-    .catch(error => console.error('Error creating customer:', error));
+        .then(response => response.json())
+        .then(() => {
+            fetchCustomers();
+            document.getElementById('createForm').reset();
+        })
+        .catch(error => console.error('Error creating customer:', error));
 }
 
 function showUpdateForm(id) {
@@ -57,6 +63,8 @@ function showUpdateForm(id) {
             document.getElementById('updateName').value = customer.name;
             document.getElementById('updateEmail').value = customer.email;
             document.getElementById('updatePhone').value = customer.phone;
+            document.getElementById('updateAddress').value = customer.address || '';
+            document.getElementById('updatePassword').value = customer.password || '';
             document.getElementById('updateFormContainer').style.display = 'block';
         })
         .catch(error => console.error('Error fetching customer:', error));
@@ -68,20 +76,22 @@ function updateCustomer(event) {
     const name = document.getElementById('updateName').value;
     const email = document.getElementById('updateEmail').value;
     const phone = document.getElementById('updatePhone').value;
+    const address = document.getElementById('updateAddress').value;
+    const password = document.getElementById('updatePassword').value;
 
     fetch(`http://localhost:3000/api/customers/${id}`, {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ name, email, phone }),
+        body: JSON.stringify({ name, email, phone, address, password }),
     })
-    .then(response => response.json())
-    .then(() => {
-        fetchCustomers();
-        cancelUpdate();
-    })
-    .catch(error => console.error('Error updating customer:', error));
+        .then(response => response.json())
+        .then(() => {
+            fetchCustomers();
+            cancelUpdate();
+        })
+        .catch(error => console.error('Error updating customer:', error));
 }
 
 function deleteCustomer(id) {
@@ -89,12 +99,22 @@ function deleteCustomer(id) {
         fetch(`http://localhost:3000/api/customers/${id}`, {
             method: 'DELETE',
         })
-        .then(() => fetchCustomers())
-        .catch(error => console.error('Error deleting customer:', error));
+            .then(() => fetchCustomers())
+            .catch(error => console.error('Error deleting customer:', error));
     }
 }
 
 function cancelUpdate() {
     document.getElementById('updateForm').reset();
     document.getElementById('updateFormContainer').style.display = 'none';
+}
+
+function generatePassword() {
+    const password = Math.random().toString(36).slice(-8);
+    document.getElementById('password').value = password;
+}
+
+function generatePasswordForUpdate() {
+    const password = Math.random().toString(36).slice(-8);
+    document.getElementById('updatePassword').value = password;
 }
