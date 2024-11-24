@@ -192,6 +192,10 @@ app.delete('/api/menu-items/:id', async (req, res) => {
     }
 });
 
+
+
+// CRUD operations for coustomers
+
 // Rest of your existing endpoints remain the same
 app.get('/api/customers', async (req, res) => {
     try {
@@ -290,6 +294,11 @@ async function sendWelcomeEmail(customerData) {
         throw error;
     }
 }
+
+
+
+
+
 
 // CRUD operations for Order
 app.get('/api/orders', async (req, res) => {
