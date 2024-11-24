@@ -10,6 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 let menuItemPrices = {}; // To store item prices for total calculation
 
+// Modify the fetchOrders function to update the status display
 function fetchOrders() {
     fetch('http://localhost:3000/api/orders')
         .then(response => response.json())
@@ -17,21 +18,53 @@ function fetchOrders() {
             const ordersList = document.getElementById('ordersList');
             ordersList.innerHTML = '';
             orders.forEach(order => {
+                // Add null checks and default values
+                const customerName = order.customer?.name || 'N/A';
+                const items = Array.isArray(order.items) ? order.items.map(item => item?.name || 'Unknown Item').join(', ') : 'No items';
+                const totalAmount = typeof order.totalAmount === 'number' ? order.totalAmount.toFixed(2) : '0.00';
+                const status = order.status || 'Pending';
+
+                const statusClass = {
+                    'Pending': 'bg-warning',
+                    'Preparing': 'bg-info',
+                    'Ready': 'bg-success',
+                    'Delivered': 'bg-primary'
+                }[status] || 'bg-secondary';
+
                 const row = document.createElement('tr');
                 row.innerHTML = `
-                    <td>${order.customer ? order.customer.name : 'N/A'}</td>
-                    <td>${order.items.map(item => item.name).join(', ')}</td>
-                    <td>$${order.totalAmount.toFixed(2)}</td>
-                    <td>${order.status}</td>
+                    <td>${customerName}</td>
+                    <td>${items}</td>
+                    <td>$${totalAmount}</td>
+                    <td><span class="badge ${statusClass} status-badge">${status}</span></td>
                     <td>
-                        <button class="btn btn-sm btn-primary" onclick="showUpdateForm('${order._id}')">Edit</button>
-                        <button class="btn btn-sm btn-danger" onclick="deleteOrder('${order._id}')">Delete</button>
+                        <div class="btn-group" role="group">
+                            <button class="btn btn-sm btn-primary" onclick="showUpdateForm('${order._id}')">
+                                <i class="bi bi-pencil"></i> Edit
+                            </button>
+                            <button class="btn btn-sm btn-danger" style="margin-left: 5px;" onclick="deleteOrder('${order._id}')">
+    <i class="bi bi-trash"></i> Delete
+</button>
+
+                        
+                        </div>
                     </td>
                 `;
                 ordersList.appendChild(row);
             });
         })
-        .catch(error => console.error('Error fetching orders:', error));
+        .catch(error => {
+            console.error('Error fetching orders:', error);
+            // Display error message to user
+            const ordersList = document.getElementById('ordersList');
+            ordersList.innerHTML = `
+                <tr>
+                    <td colspan="5" class="text-center text-danger">
+                        Error loading orders. Please try again later.
+                    </td>
+                </tr>
+            `;
+        });
 }
 
 function fetchCustomers() {
@@ -77,7 +110,7 @@ function createOrder(event) {
     event.preventDefault();
     const customer = document.getElementById('customer').value;
     const items = Array.from(document.getElementById('items').selectedOptions).map(option => option.value);
-    const totalAmount = document.getElementById('totalAmount').value;
+    const totalAmount = parseFloat(document.getElementById('totalAmount').value) || 0;
     const status = document.getElementById('status').value;
 
     fetch('http://localhost:3000/api/orders', {
@@ -85,46 +118,71 @@ function createOrder(event) {
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ customer, items, totalAmount, status }),
+        body: JSON.stringify({ 
+            customer, 
+            items, 
+            totalAmount, 
+            status 
+        }),
     })
-        .then(response => response.json())
-        .then(() => {
-            fetchOrders();
-            document.getElementById('createForm').reset();
-        })
-        .catch(error => console.error('Error creating order:', error));
+    .then(response => response.json())
+    .then(() => {
+        fetchOrders();
+        document.getElementById('createForm').reset();
+    })
+    .catch(error => {
+        console.error('Error creating order:', error);
+        alert('Error creating order. Please try again.');
+    });
 }
 
+
+// Initialize Bootstrap modal
+const updateModal = new bootstrap.Modal(document.getElementById('updateFormContainer'));
+
+// Modify the showUpdateForm function to use the modal
 function showUpdateForm(id) {
     fetch(`http://localhost:3000/api/orders/${id}`)
         .then(response => response.json())
         .then(order => {
             document.getElementById('updateId').value = order._id;
-            document.getElementById('updateCustomer').value = order.customer._id;
-            document.getElementById('updateTotalAmount').value = order.totalAmount.toFixed(2);
-            document.getElementById('updateStatus').value = order.status;
+            document.getElementById('updateCustomer').value = order.customer?._id || '';
+            document.getElementById('updateTotalAmount').value = 
+                (typeof order.totalAmount === 'number' ? order.totalAmount.toFixed(2) : '0.00');
+            document.getElementById('updateStatus').value = order.status || 'Pending';
 
             const updateItemsContainer = document.getElementById('updateItemsContainer');
             updateItemsContainer.innerHTML = ''; // Clear previous content
 
-            order.items.forEach(item => {
-                const itemRow = document.createElement('div');
-                itemRow.classList.add('d-flex', 'align-items-center', 'mb-2');
-                itemRow.innerHTML = `
-                    <span class="me-2">${item.name}</span>
-                    <button type="button" class="btn btn-sm btn-danger" data-id="${item._id}">Remove</button>
-                `;
-                updateItemsContainer.appendChild(itemRow);
+            if (Array.isArray(order.items)) {
+                order.items.forEach(item => {
+                    if (item) {
+                        const itemRow = document.createElement('div');
+                        itemRow.classList.add('d-flex', 'align-items-center', 'mb-2', 'bg-white', 'p-2', 'rounded');
+                        itemRow.innerHTML = `
+                            <span class="me-auto">${item.name || 'Unknown Item'}</span>
+                            <button type="button" class="btn btn-danger btn-sm" data-id="${item._id || ''}">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        `;
+                        updateItemsContainer.appendChild(itemRow);
 
-                itemRow.querySelector('button').addEventListener('click', () => {
-                    updateItemsContainer.removeChild(itemRow);
-                    updateTotalAmount();
+                        itemRow.querySelector('button').addEventListener('click', () => {
+                            updateItemsContainer.removeChild(itemRow);
+                            updateTotalAmount();
+                        });
+                    }
                 });
-            });
+            }
 
-            document.getElementById('updateFormContainer').style.display = 'block';
+            // Show the modal
+            const updateModal = new bootstrap.Modal(document.getElementById('updateFormContainer'));
+            updateModal.show();
         })
-        .catch(error => console.error('Error fetching order:', error));
+        .catch(error => {
+            console.error('Error fetching order:', error);
+            alert('Error loading order details. Please try again.');
+        });
 }
 
 function updateTotalAmount() {
@@ -135,12 +193,15 @@ function updateTotalAmount() {
     document.getElementById('updateTotalAmount').value = total.toFixed(2);
 }
 
+// Update the updateOrder function
 function updateOrder(event) {
     event.preventDefault();
     const id = document.getElementById('updateId').value;
     const customer = document.getElementById('updateCustomer').value;
-    const items = Array.from(document.querySelectorAll('#updateItemsContainer button')).map(button => button.dataset.id);
-    const totalAmount = document.getElementById('updateTotalAmount').value;
+    const items = Array.from(document.querySelectorAll('#updateItemsContainer button'))
+        .map(button => button.dataset.id)
+        .filter(id => id);
+    const totalAmount = parseFloat(document.getElementById('updateTotalAmount').value) || 0;
     const status = document.getElementById('updateStatus').value;
 
     fetch(`http://localhost:3000/api/orders/${id}`, {
@@ -148,14 +209,28 @@ function updateOrder(event) {
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ customer, items, totalAmount, status }),
+        body: JSON.stringify({ 
+            customer, 
+            items, 
+            totalAmount, 
+            status 
+        }),
     })
-        .then(response => response.json())
-        .then(() => {
-            fetchOrders();
-            cancelUpdate();
-        })
-        .catch(error => console.error('Error updating order:', error));
+    .then(response => response.json())
+    .then(() => {
+        // Get the modal instance and hide it
+        const modalElement = document.getElementById('updateFormContainer');
+        const modal = bootstrap.Modal.getInstance(modalElement);
+        modal.hide();
+        
+        // Reset form and refresh orders
+        document.getElementById('updateForm').reset();
+        fetchOrders();
+    })
+    .catch(error => {
+        console.error('Error updating order:', error);
+        alert('Error updating order. Please try again.');
+    });
 }
 
 function deleteOrder(id) {
@@ -168,7 +243,10 @@ function deleteOrder(id) {
     }
 }
 
+// Modify the cancelUpdate function to use the modal
 function cancelUpdate() {
+    const modalElement = document.getElementById('updateFormContainer');
+    const modal = bootstrap.Modal.getInstance(modalElement);
+    modal.hide();
     document.getElementById('updateForm').reset();
-    document.getElementById('updateFormContainer').style.display = 'none';
 }
