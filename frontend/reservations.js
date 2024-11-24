@@ -4,6 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('createForm').addEventListener('submit', createReservation);
     document.getElementById('updateForm').addEventListener('submit', updateReservation);
     document.getElementById('cancelUpdate').addEventListener('click', cancelUpdate);
+    document.getElementById('cancelUpdateBtn').addEventListener('click', cancelUpdate);
 });
 
 function fetchReservations() {
@@ -15,20 +16,42 @@ function fetchReservations() {
             reservations.forEach(reservation => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
-                    <td>${reservation.customer ? reservation.customer.name : 'N/A'}</td>
+                    <td class="px-3">${reservation.customer ? reservation.customer.name : 'N/A'}</td>
                     <td>${new Date(reservation.date).toLocaleDateString()}</td>
                     <td>${reservation.time}</td>
                     <td>${reservation.partySize}</td>
-                    <td>${reservation.status}</td>
                     <td>
-                        <button class="btn btn-sm btn-primary" onclick="showUpdateForm('${reservation._id}')">Edit</button>
-                        <button class="btn btn-sm btn-danger" onclick="deleteReservation('${reservation._id}')">Delete</button>
+                        <span class="badge bg-${getStatusBadgeColor(reservation.status)}">${reservation.status}</span>
+                    </td>
+                    <td class="text-end px-3">
+                        <div class="btn-group btn-group-sm">
+                            <button class="btn btn-outline-primary" onclick="showUpdateForm('${reservation._id}')">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button class="btn btn-outline-danger" onclick="deleteReservation('${reservation._id}')">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
                     </td>
                 `;
                 reservationsList.appendChild(row);
             });
         })
         .catch(error => console.error('Error fetching reservations:', error));
+}
+
+// Helper function to get badge color based on status
+function getStatusBadgeColor(status) {
+    switch (status) {
+        case 'Confirmed':
+            return 'success';
+        case 'Pending':
+            return 'warning';
+        case 'Cancelled':
+            return 'danger';
+        default:
+            return 'secondary';
+    }
 }
 
 function fetchCustomers() {
@@ -80,7 +103,10 @@ function showUpdateForm(id) {
             document.getElementById('updateTime').value = reservation.time;
             document.getElementById('updatePartySize').value = reservation.partySize;
             document.getElementById('updateStatus').value = reservation.status;
-            document.getElementById('updateFormContainer').style.display = 'block';
+            
+            // Show the modal using Bootstrap's modal API
+            const updateModal = new bootstrap.Modal(document.getElementById('updateFormContainer'));
+            updateModal.show();
         })
         .catch(error => console.error('Error fetching reservation:', error));
 }
@@ -121,5 +147,9 @@ function deleteReservation(id) {
 
 function cancelUpdate() {
     document.getElementById('updateForm').reset();
-    document.getElementById('updateFormContainer').style.display = 'none';
+    // Hide the modal using Bootstrap's modal API
+    const modal = bootstrap.Modal.getInstance(document.getElementById('updateFormContainer'));
+    if (modal) {
+        modal.hide();
+    }
 }
