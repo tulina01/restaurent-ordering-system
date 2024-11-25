@@ -120,8 +120,14 @@ invoiceSchema.pre('save', function(next) {
 const inventoryItemSchema = new mongoose.Schema({
     name: String,
     quantity: Number,
-    unit: String
+    unit: String,
+    itemType: {
+        type: String,
+        enum: ['Vegetables & Fruits', 'Meat & Seafood', 'Beverages', 'Utensils & Packaging'],
+        required: true
+    }
 });
+
 
 const MenuItem = mongoose.model('MenuItem', menuItemSchema);
 const Customer = mongoose.model('Customer', customerSchema);

@@ -1,3 +1,5 @@
+
+
 document.addEventListener('DOMContentLoaded', () => {
     fetchInventory();
     document.getElementById('createForm').addEventListener('submit', createInventoryItem);
@@ -17,9 +19,10 @@ function fetchInventory() {
                     <td>${item.name}</td>
                     <td>${item.quantity}</td>
                     <td>${item.unit}</td>
+                    <td>${item.itemType}</td>
                     <td>
-                        <button class="btn btn-sm btn-primary" onclick="showUpdateForm('${item._id}')">Edit</button>
-                        <button class="btn btn-sm btn-danger" onclick="deleteInventoryItem('${item._id}')">Delete</button>
+                        <button class="btn btn-sm btn-outline-primary" onclick="showUpdateForm('${item._id}')"> <i class="fas fa-edit"></i></button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="deleteInventoryItem('${item._id}')"><i class="fas fa-trash"></i></button>
                     </td>
                 `;
                 inventoryList.appendChild(row);
@@ -33,18 +36,20 @@ function createInventoryItem(event) {
     const name = document.getElementById('name').value;
     const quantity = document.getElementById('quantity').value;
     const unit = document.getElementById('unit').value;
+    const itemType = document.getElementById('itemType').value;
 
     fetch('http://localhost:3000/api/inventory', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ name, quantity, unit }),
+        body: JSON.stringify({ name, quantity, unit, itemType }),
     })
     .then(response => response.json())
     .then(() => {
         fetchInventory();
         document.getElementById('createForm').reset();
+        document.getElementById('unit').disabled = true;
     })
     .catch(error => console.error('Error creating inventory item:', error));
 }
@@ -57,7 +62,11 @@ function showUpdateForm(id) {
             document.getElementById('updateName').value = item.name;
             document.getElementById('updateQuantity').value = item.quantity;
             document.getElementById('updateUnit').value = item.unit;
-            document.getElementById('updateFormContainer').style.display = 'block';
+            document.getElementById('updateItemType').value = item.itemType;
+            
+            // Use Bootstrap modal to show update form
+            var updateModal = new bootstrap.Modal(document.getElementById('updateModal'));
+            updateModal.show();
         })
         .catch(error => console.error('Error fetching inventory item:', error));
 }
@@ -68,18 +77,20 @@ function updateInventoryItem(event) {
     const name = document.getElementById('updateName').value;
     const quantity = document.getElementById('updateQuantity').value;
     const unit = document.getElementById('updateUnit').value;
+    const itemType = document.getElementById('updateItemType').value;
 
     fetch(`http://localhost:3000/api/inventory/${id}`, {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ name, quantity, unit }),
+        body: JSON.stringify({ name, quantity, unit, itemType }),
     })
     .then(response => response.json())
     .then(() => {
         fetchInventory();
-        cancelUpdate();
+        var updateModal = bootstrap.Modal.getInstance(document.getElementById('updateModal'));
+        updateModal.hide();
     })
     .catch(error => console.error('Error updating inventory item:', error));
 }
@@ -97,4 +108,26 @@ function deleteInventoryItem(id) {
 function cancelUpdate() {
     document.getElementById('updateForm').reset();
     document.getElementById('updateFormContainer').style.display = 'none';
+}
+
+function updateUnitOptions() {
+    const itemType = document.getElementById('itemType').value;
+    const unitInput = document.getElementById('unit');
+
+    if (itemType === 'Vegetables & Fruits' || itemType === 'Meat & Seafood') {
+        unitInput.disabled = false;
+        unitInput.value = 'kg';
+        unitInput.placeholder = 'Enter Quantity (kg or g)';
+    } else if (itemType === 'Beverages') {
+        unitInput.disabled = false;
+        unitInput.value = 'L';
+        unitInput.placeholder = 'Enter Quantity (L or mL)';
+    } else if (itemType === 'Utensils & Packaging') {
+        unitInput.disabled = false;
+        unitInput.value = 'pcs';
+        unitInput.placeholder = 'Enter Quantity (pcs)';
+    } else {
+        unitInput.disabled = true;
+        unitInput.placeholder = 'Select Item Type First';
+    }
 }
