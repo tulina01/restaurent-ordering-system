@@ -3,6 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('createForm').addEventListener('submit', createSupplier);
     document.getElementById('updateForm').addEventListener('submit', updateSupplier);
     document.getElementById('cancelUpdate').addEventListener('click', cancelUpdate);
+    updateModal = new bootstrap.Modal(document.getElementById('updateFormContainer'));
 });
 
 function fetchSuppliers() {
@@ -18,9 +19,14 @@ function fetchSuppliers() {
                     <td>${supplier.contactPerson || 'N/A'}</td>
                     <td>${supplier.email || 'N/A'}</td>
                     <td>${supplier.phone || 'N/A'}</td>
+                    <td>${supplier.address || 'N/A'}</td>
                     <td>
-                        <button class="btn btn-sm btn-primary" onclick="showUpdateForm('${supplier._id}')">Edit</button>
-                        <button class="btn btn-sm btn-danger" onclick="deleteSupplier('${supplier._id}')">Delete</button>
+                        <button class="btn btn-sm btn-outline-primary me-2" onclick="showUpdateForm('${supplier._id}')">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="deleteSupplier('${supplier._id}')">
+                            <i class="fas fa-trash"></i>
+                        </button>
                     </td>
                 `;
                 suppliersList.appendChild(row);
@@ -52,6 +58,8 @@ function createSupplier(event) {
     .catch(error => console.error('Error creating supplier:', error));
 }
 
+let updateModal;
+
 function showUpdateForm(id) {
     fetch(`http://localhost:3000/api/suppliers/${id}`)
         .then(response => response.json())
@@ -62,7 +70,7 @@ function showUpdateForm(id) {
             document.getElementById('updateEmail').value = supplier.email;
             document.getElementById('updatePhone').value = supplier.phone;
             document.getElementById('updateAddress').value = supplier.address;
-            document.getElementById('updateFormContainer').style.display = 'block';
+            updateModal.show();
         })
         .catch(error => console.error('Error fetching supplier:', error));
 }
@@ -102,6 +110,6 @@ function deleteSupplier(id) {
 }
 
 function cancelUpdate() {
+    updateModal.hide();
     document.getElementById('updateForm').reset();
-    document.getElementById('updateFormContainer').style.display = 'none';
 }
