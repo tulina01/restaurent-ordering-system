@@ -3,8 +3,12 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('createForm').addEventListener('submit', createEmployee);
     document.getElementById('updateForm').addEventListener('submit', updateEmployee);
     document.getElementById('cancelUpdate').addEventListener('click', cancelUpdate);
+
+    updateModal = new bootstrap.Modal(document.getElementById('updateFormContainer'));
+    fetchEmployees();
 });
 
+// Update the fetchEmployees function to include icons
 function fetchEmployees() {
     fetch('http://localhost:3000/api/employees')
         .then(response => response.json())
@@ -19,8 +23,12 @@ function fetchEmployees() {
                     <td>${employee.email}</td>
                     <td>${employee.phone}</td>
                     <td>
-                        <button class="btn btn-sm btn-primary" onclick="showUpdateForm('${employee._id}')">Edit</button>
-                        <button class="btn btn-sm btn-danger" onclick="deleteEmployee('${employee._id}')">Delete</button>
+                        <button class="btn btn-sm btn-outline-primary me-2" onclick="showUpdateForm('${employee._id}')">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="deleteEmployee('${employee._id}')">
+                            <i class="fas fa-trash"></i>
+                        </button>
                     </td>
                 `;
                 employeesList.appendChild(row);
@@ -60,7 +68,7 @@ function showUpdateForm(id) {
             document.getElementById('updatePosition').value = employee.position;
             document.getElementById('updateEmail').value = employee.email;
             document.getElementById('updatePhone').value = employee.phone;
-            document.getElementById('updateFormContainer').style.display = 'block';
+            updateModal.show();
         })
         .catch(error => console.error('Error fetching employee:', error));
 }
@@ -99,6 +107,6 @@ function deleteEmployee(id) {
 }
 
 function cancelUpdate() {
+    updateModal.hide();
     document.getElementById('updateForm').reset();
-    document.getElementById('updateFormContainer').style.display = 'none';
 }
