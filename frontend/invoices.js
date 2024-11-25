@@ -6,6 +6,8 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('cancelUpdate').addEventListener('click', cancelUpdate);
     document.getElementById('addItemBtn').addEventListener('click', addItemField);
     document.getElementById('updateAddItemBtn').addEventListener('click', addUpdateItemField);
+  
+    
 });
 
 function fetchInvoices() {
@@ -38,8 +40,8 @@ function createInvoiceRow(invoice) {
         <td>${invoice.status || 'N/A'}</td>
         <td>${itemsHtml}</td>
         <td>
-            <button class="btn btn-sm btn-primary" onclick="showUpdateForm('${invoice._id}')">Edit</button>
-            <button class="btn btn-sm btn-danger" onclick="deleteInvoice('${invoice._id}')">Delete</button>
+            <button class="btn btn-sm btn-outline-primary" onclick="showUpdateForm('${invoice._id}')">  <i class="fas fa-edit"></i></button>
+            <button class="btn btn-sm btn-outline-danger" onclick="deleteInvoice('${invoice._id}')"> <i class="fas fa-trash"></i></button>
         </td>
     `;
     return row;
@@ -120,7 +122,9 @@ function showUpdateForm(id) {
                 addUpdateItemField(); // Add at least one item field if there are no items
             }
             
-            document.getElementById('updateFormContainer').style.display = 'block';
+            // Show the modal
+            var updateModal = new bootstrap.Modal(document.getElementById('updateModal'));
+            updateModal.show();
         })
         .catch(error => console.error('Error fetching invoice:', error));
 }
@@ -181,8 +185,9 @@ function deleteInvoice(id) {
 
 function cancelUpdate() {
     document.getElementById('updateForm').reset();
-    document.getElementById('updateFormContainer').style.display = 'none';
     document.getElementById('updateItemsContainer').innerHTML = '';
+    var updateModal = bootstrap.Modal.getInstance(document.getElementById('updateModal'));
+    updateModal.hide();
 }
 
 
@@ -198,6 +203,7 @@ function addUpdateItemField() {
     `;
     container.appendChild(itemField);
 }
+
 
 function getItemsFromForm(containerId, prefix = '') {
     const container = document.getElementById(containerId);
