@@ -9,6 +9,7 @@ const nodemailer = require('nodemailer');
 
 
 
+
 const app = express();
 const port = 3000;
 app.use(bodyParser.json());
@@ -47,6 +48,8 @@ const customerSchema = new mongoose.Schema({
     address: String,
     password: String
 });
+
+
 
 module.exports = mongoose.model('Customer', customerSchema);
 
@@ -692,6 +695,74 @@ app.delete('/api/inventory/:id', async (req, res) => {
     }
 });
 
+// Utility function for hashing passwords
+function hashPassword(password) {
+    return crypto.createHash('sha256').update(password).digest('hex');
+}
+
+// 1. Customer Registration
+app.post("/api/customers", async (req, res) => {
+    try {
+      const { name, email, phone, address, password } = req.body;
+  
+      // Check if the email is already registered
+      const existingCustomer = await Customer.findOne({ email });
+      if (existingCustomer) {
+        return res
+          .status(400)
+          .json({ success: false, message: "Email is already registered." });
+      }
+  
+      // Create a new customer
+      const newCustomer = new Customer({ name, email, phone, address, password });
+      await newCustomer.save();
+  
+      return res.status(201).json({
+        success: true,
+        message: "Registration successful.",
+        customer: newCustomer,
+      });
+    } catch (error) {
+      console.error("Registration error:", error);
+      return res
+        .status(500)
+        .json({ success: false, message: "Internal server error." });
+    }
+  });
+  
+  // 2. Customer Login
+  app.post("/api/customers/login", async (req, res) => {
+    try {
+      const { email, password } = req.body;
+  
+      // Find the customer by email
+      const customer = await Customer.findOne({ email });
+      if (!customer) {
+        return res
+          .status(404)
+          .json({ success: false, message: "Customer not found." });
+      }
+  
+      // Check if the password matches
+      if (customer.password !== password) {
+        return res
+          .status(400)
+          .json({ success: false, message: "Incorrect password." });
+      }
+  
+      return res.status(200).json({
+        success: true,
+        message: "Login successful.",
+        customer,
+      });
+    } catch (error) {
+      console.error("Login error:", error);
+      return res
+        .status(500)
+        .json({ success: false, message: "Internal server error." });
+    }
+  });
+  
 // Error handling middleware
 app.use((err, req, res, next) => {
     console.error(err.stack);
@@ -708,88 +779,3 @@ app.listen(port, () => {
 });
 
 
-// Customer registration
-// app.post('/api/customers/register', async (req, res) => {
-//     try {
-//         const { name, email, password } = req.body;
-
-//         // Check if user already exists
-//         let customer = await Customer.findOne({ email });
-//         if (customer) {
-//             return res.status(400).json({ msg: 'User already exists' });
-//         }
-
-//         // Create new customer
-//         customer = new Customer({
-//             name,
-//             email,
-//             password
-//         });
-
-//         // Hash password
-//         const salt = await bcrypt.genSalt(10);
-//         customer.password = await bcrypt.hash(password, salt);
-
-//         // Save customer to database
-//         await customer.save();
-
-//         // Create and return JWT token
-//         const payload = {
-//             customer: {
-//                 id: customer.id
-//             }
-//         };
-
-//         jwt.sign(
-//             payload,
-//             'your_jwt_secret', // Replace with your actual JWT secret
-//             { expiresIn: '1h' },
-//             (err, token) => {
-//                 if (err) throw err;
-//                 res.json({ token });
-//             }
-//         );
-//     } catch (err) {
-//         console.error(err.message);
-//         res.status(500).send('Server error');
-//     }
-// });
-
-// Customer login
-// app.post('/api/customers/login', async (req, res) => {
-//     try {
-//         const { email, password } = req.body;
-
-//         // Check if user exists
-//         let customer = await Customer.findOne({ email });
-//         if (!customer) {
-//             return res.status(400).json({ msg: 'Invalid credentials' });
-//         }
-
-//         // Validate password
-//         const isMatch = await bcrypt.compare(password, customer.password);
-//         if (!isMatch) {
-//             return res.status(400).json({ msg: 'Invalid credentials' });
-//         }
-
-//         // Create and return JWT token
-//         const payload = {
-//             customer: {
-//                 id: customer.id
-//             }
-//         };
-
-//         jwt.sign(
-//             payload,
-//             'your_jwt_secret', // Replace with your actual JWT secret
-//             { expiresIn: '1h' },
-//             (err, token) => {
-//                 if (err) throw err;
-//                 res.json({ token });
-//             }
-//         );
-//     } catch (err) {
-//         console.error(err.message);
-//         res.status(500).send('Server error');
-//     }
-// });
