@@ -48,55 +48,48 @@ function fetchMenuItemsByCategory(category) {
 
 function renderCategory(categoryName, items) {
   const categorySection = document.querySelector(
-    `#${categoryName.replace(/\s+/g, "").toLowerCase()}`
+      `#${categoryName.replace(/\s+/g, "").toLowerCase()}`
   );
   categorySection.innerHTML = "";
 
   if (items.length === 0) {
-    categorySection.innerHTML = `<p class="text-center text-muted my-4">No items available in this category.</p>`;
-    return;
+      categorySection.innerHTML = `<p class="text-center text-muted my-4">No items available in this category.</p>`;
+      return;
   }
 
+  const row = document.createElement("div");
+  row.classList.add("row", "row-cols-1", "row-cols-md-3", "g-3");
+
   items.forEach((item) => {
-    const col = document.createElement("div");
-    col.classList.add("col-12", "mb-4");
-    col.innerHTML = `
-              <div class="card border-0 shadow-sm rounded-3 overflow-hidden">
-                  <div class="row g-0">
-                      <div class="col-4">
-                          <img src="${
-                            item.imageUrl
-                          }" class="img-fluid rounded-start" alt="${
-      item.name
-    }" style="height: 100%; object-fit: cover;">
-                      </div>
-                      <div class="col-8">
-                          <div class="card-body">
-                              <h5 class="card-title">${item.name}</h5>
-                              <p class="card-text small">${
-                                item.description
-                              }</p>
-                              <div class="d-flex justify-content-between align-items-center">
-                                  <span class="fw-bold">$${item.price.toFixed(
-                                    2
-                                  )}</span>
-                                  <button class="btn btn-sm btn-outline-primary add-to-cart" data-item='${JSON.stringify(
-                                    item
-                                  )}'>Add to Cart</button>
-                              </div>
-                          </div>
-                      </div>
+      const col = document.createElement("div");
+      col.classList.add("col");
+      col.innerHTML = `
+          <div class="card h-100 menu-card shadow-sm">
+              <img src="${item.imageUrl}" class="card-img-top menu-card-img" alt="${item.name}" style="object-fit: cover; height: 200px;">
+              <div class="card-body d-flex flex-column p-3">
+                  <div class="mb-2">
+                      <h6 class="card-title mb-1 fw-bold">${item.name}</h6>
+                      <p class="card-text small text-muted mb-2 flex-grow-1" style="overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">${item.description}</p>
+                  </div>
+                  <div class="d-flex justify-content-between align-items-center mt-auto">
+                      <span class="fw-bold">$${item.price.toFixed(2)}</span>
+                      <button class="btn btn-sm btn-outline-primary add-to-cart" data-item='${JSON.stringify(item)}'>
+                          Add to Cart
+                      </button>
                   </div>
               </div>
-          `;
-    categorySection.appendChild(col);
+          </div>
+      `;
+      row.appendChild(col);
   });
 
+  categorySection.appendChild(row);
+
   categorySection.querySelectorAll(".add-to-cart").forEach((button) => {
-    button.addEventListener("click", function () {
-      const item = JSON.parse(this.getAttribute("data-item"));
-      addToCart(item);
-    });
+      button.addEventListener("click", function () {
+          const item = JSON.parse(this.getAttribute("data-item"));
+          addToCart(item);
+      });
   });
 }
 

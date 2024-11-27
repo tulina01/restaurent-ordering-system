@@ -1,165 +1,81 @@
 body {
-    padding-top: 20px;
+    background-color: #f4f6f9;
+}
+.menu-card {
+    height: 100%; /* Changed from fixed height to responsive height */
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.3s ease; /* Added subtle hover effect */
+}
+.menu-card:hover {
+    transform: scale(1.03); /* Slight scale up on hover */
+}
+.menu-card-img {
+    height: 200px; /* Reduced from 250px to match previous code */
+    object-fit: cover;
+    width: 100%;
+}
+.menu-card-body {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 0.75rem; /* Added consistent padding */
+}
+.cart-card,
+.order-history-card {
+  transition: all 0.3s ease;
 }
 
-.navbar {
-    margin-bottom: 20px;
+.cart-card:hover,
+.order-history-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1) !important;
 }
 
-.form-container {
-    max-width: 500px;
-    margin: 0 auto;
+.bg-gradient-primary {
+  background: linear-gradient(135deg, #007bff 0%, #3f83f8 100%);
 }
 
-.menu-item {
-    border: 1px solid #ddd;
-    padding: 10px;
-    margin-bottom: 10px;
+.bg-light-primary {
+  background-color: rgba(63, 131, 248, 0.1);
+  color: #3f83f8;
 }
 
-#cart {
-    border: 1px solid #ddd;
-    padding: 10px;
+.bg-light-secondary {
+  background-color: rgba(108, 117, 125, 0.1);
+  color: #6c757d;
 }
 
-/* Custom styles for the form */
-#createForm {
-    max-width: 800px;
-    margin: auto;
+.cart-items-container {
+  max-height: 300px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #007bff #e9ecef;
 }
 
-#createForm .form-control:focus,
-#createForm .form-select:focus {
-    border-color: #0d6efd;
-    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.1);
+.cart-items-container::-webkit-scrollbar {
+  width: 6px;
 }
 
-#createForm .form-floating > label {
-    padding-left: 1.5rem;
+.cart-items-container::-webkit-scrollbar-track {
+  background: #e9ecef;
+  border-radius: 10px;
 }
 
-#createForm .form-control,
-#createForm .form-select {
-    transition: all 0.3s ease;
+.cart-items-container::-webkit-scrollbar-thumb {
+  background-color: #007bff;
+  border-radius: 10px;
 }
 
-#createForm .form-control:hover,
-#createForm .form-select:hover {
-    background-color: #f8f9fa !important;
-}
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .menu-card-img {
+        height: 180px; /* Slightly smaller image on smaller screens */
+    }
 
-#createForm .btn {
-    transition: all 0.3s ease;
-}
-
-#createForm .btn:hover {
-    transform: translateY(-1px);
-}
-
-
-
-/* Custom styles for the update form */
-#updateForm .form-control:focus,
-#updateForm .form-select:focus {
-    border-color: #0d6efd;
-    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.1);
-}
-
-#updateForm .form-floating > label {
-    padding-left: 1.5rem;
-}
-
-#updateForm .form-control,
-#updateForm .form-select {
-    transition: all 0.3s ease;
-}
-
-#updateForm .form-control:hover,
-#updateForm .form-select:hover {
-    background-color: #f8f9fa !important;
-}
-
-#updateForm .btn {
-    transition: all 0.3s ease;
-}
-
-#updateForm .btn:hover {
-    transform: translateY(-1px);
-}
-
-.modal-content {
-    border-radius: 1rem;
-    overflow: hidden;
-}
-
-.modal.fade .modal-dialog {
-    transition: transform 0.3s ease-out;
-}
-
-/* Custom styles for forms and table */
-.form-control:focus,
-.form-select:focus {
-    border-color: #0d6efd;
-    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.1);
-}
-
-.form-floating > label {
-    padding-left: 1.5rem;
-}
-
-.form-control,
-.form-select {
-    transition: all 0.3s ease;
-}
-
-.form-control:hover,
-.form-select:hover {
-    background-color: #f8f9fa !important;
-}
-
-.btn {
-    transition: all 0.3s ease;
-}
-
-.btn:hover {
-    transform: translateY(-1px);
-}
-
-.table th {
-    font-weight: 600;
-    font-size: 0.9rem;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.table td {
-    padding: 1rem;
-    vertical-align: middle;
-}
-
-.modal-content {
-    border-radius: 1rem;
-    overflow: hidden;
-}
-
-.card {
-    overflow: hidden;
-}
-
-/* Custom scrollbar for table */
-.table-responsive::-webkit-scrollbar {
-    height: 8px;
-}
-
-.table-responsive::-webkit-scrollbar-track {
-    background: #f1f1f1;
-}
-
-.table-responsive::-webkit-scrollbar-thumb {
-    background: #888;
-    border-radius: 4px;
-}
-
-.table-responsive::-webkit-scrollbar-thumb:hover {
-    background: #555;
+ .cart-card,
+  .order-history-card {
+    margin-top: 0.5rem;
+  }
 }
