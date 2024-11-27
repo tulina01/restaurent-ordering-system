@@ -32,8 +32,10 @@
       <h1 class="text-center mb-4">Restaurant Menu</h1>
 
       <!-- Auth Buttons -->
-      <div class="auth-buttons">
+      <div class="d-flex align-items-center">
+        <span id="userGreeting" class="me-3"></span>
         <button
+          id="loginBtn"
           class="btn btn-outline-primary me-2"
           data-bs-toggle="modal"
           data-bs-target="#loginModal"
@@ -41,11 +43,19 @@
           Login
         </button>
         <button
-          class="btn btn-outline-secondary"
+          id="registerBtn"
+          class="btn btn-primary me-2"
           data-bs-toggle="modal"
           data-bs-target="#registerModal"
         >
           Register
+        </button>
+        <button
+          id="logoutBtn"
+          class="btn btn-outline-danger"
+          style="display: none"
+        >
+          Logout
         </button>
       </div>
 

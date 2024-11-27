@@ -3,6 +3,15 @@ let cart = [];
 let currentUser = null;
 
 document.addEventListener("DOMContentLoaded", () => {
+
+  const savedUser = getCookie("currentUser");
+  if (savedUser) {
+    currentUser = JSON.parse(savedUser);
+    updateUserGreeting();
+    updatePlaceOrderButton();
+    updateAuthButtons();
+  }
+
   fetchMenuItemsByCategory("Starters");
   fetchMenuItemsByCategory("Main Course");
   fetchMenuItemsByCategory("Desserts");
@@ -20,6 +29,9 @@ document.addEventListener("DOMContentLoaded", () => {
   document
     .getElementById("generatePassword")
     .addEventListener("click", generatePassword);
+    document
+    .getElementById("logoutBtn")
+    .addEventListener("click", handleLogout);
 });
 
 function fetchMenuItemsByCategory(category) {
@@ -170,8 +182,10 @@ function handleLogin(event) {
     .then((data) => {
       if (data.success) {
         currentUser = data.customer;
+        setCookie("currentUser", JSON.stringify(currentUser), 7);
         updateUserGreeting();
         updatePlaceOrderButton();
+        updateAuthButtons(); // Add this line
         bootstrap.Modal.getInstance(
           document.getElementById("loginModal")
         ).hide();
@@ -184,6 +198,33 @@ function handleLogin(event) {
       alert("An error occurred during login. Please try again.");
     });
 }
+
+function handleLogout() {
+  currentUser = null;
+  deleteCookie("currentUser");
+  updateUserGreeting();
+  updatePlaceOrderButton();
+  updateAuthButtons(); 
+  alert("You have been logged out.");
+}
+
+
+function updateAuthButtons() {
+  const loginBtn = document.getElementById("loginBtn");
+  const registerBtn = document.getElementById("registerBtn");
+  const logoutBtn = document.getElementById("logoutBtn");
+
+  if (currentUser) {
+    loginBtn.style.display = "none";
+    registerBtn.style.display = "none";
+    logoutBtn.style.display = "inline-block";
+  } else {
+    loginBtn.style.display = "inline-block";
+    registerBtn.style.display = "inline-block";
+    logoutBtn.style.display = "none";
+  }
+}
+
 
 function handleRegister(event) {
   event.preventDefault();
@@ -261,4 +302,20 @@ function handlePlaceOrder() {
 function generatePassword() {
   const password = Math.random().toString(36).slice(-8);
   document.getElementById("registerPassword").value = password;
+}
+
+
+// Cookie Utility Functions
+function setCookie(name, value, days) {
+  const expires = new Date(Date.now() + days * 86400000).toUTCString();
+  document.cookie = `${name}=${value}; expires=${expires}; path=/`;
+}
+
+function getCookie(name) {
+  const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+  return match ? match[2] : null;
+}
+
+function deleteCookie(name) {
+  document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/`;
 }
