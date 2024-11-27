@@ -1,4 +1,3 @@
-
 let cart = [];
 let currentUser = null;
 
@@ -10,6 +9,7 @@ document.addEventListener("DOMContentLoaded", () => {
     updateUserGreeting();
     updatePlaceOrderButton();
     updateAuthButtons();
+    updateOrderHistory();
   }
 
   fetchMenuItemsByCategory("Starters");
@@ -186,6 +186,7 @@ function handleLogin(event) {
         updateUserGreeting();
         updatePlaceOrderButton();
         updateAuthButtons(); // Add this line
+        updateOrderHistory();
         bootstrap.Modal.getInstance(
           document.getElementById("loginModal")
         ).hide();
@@ -283,21 +284,119 @@ function updatePlaceOrderButton() {
   }
 }
 
+
+// code for place oder functionality and view order history functionality start in here
 function handlePlaceOrder() {
   if (!currentUser) {
-    alert("Please register with the system to place an order.");
+    alert("Please log in to place an order.");
     return;
   }
 
-  // Implement order placement logic here
-  console.log("Placing order for user:", currentUser.name);
-  console.log("Order items:", cart);
+  if (cart.length === 0) {
+    alert("Your cart is empty. Please add items before placing an order.");
+    return;
+  }
 
-  // Clear the cart after placing the order
-  cart = [];
-  updateCart();
-  alert("Order placed successfully!");
+  const orderData = {
+    customer: currentUser._id,
+    items: cart.map(item => item._id), // Change this line
+    totalAmount: cart.reduce((total, item) => total + item.price * item.quantity, 0),
+    status: "Pending"
+  };
+
+  console.log("Sending order data:", orderData); // Add this line for debugging
+
+  fetch("http://localhost:3000/api/orders", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(orderData),
+  })
+    .then((response) => {
+      if (!response.ok) {
+        return response.json().then(err => Promise.reject(err));
+      }
+      return response.json();
+    })
+    .then((data) => {
+      alert("Order placed successfully!");
+      cart = [];
+      updateCart();
+      updateOrderHistory();
+    })
+    .catch((error) => {
+      console.error("Error placing order:", error);
+      alert("An error occurred while placing your order: " + (error.message || "Please try again."));
+    });
 }
+
+
+
+
+function updateOrderHistory() {
+  if (!currentUser) return;
+
+  // Fetch orders for the current user
+  fetch(`http://localhost:3000/api/orders?customer=${currentUser._id}`)
+    .then((response) => response.json())
+    .then((orders) => {
+      const orderHistoryElement = document.getElementById("orderHistory");
+      orderHistoryElement.innerHTML = "";
+
+      // Check if there are any orders
+      if (orders.length === 0) {
+        orderHistoryElement.innerHTML = "<p>No order history available.</p>";
+        return;
+      }
+
+      // Create a table for displaying order history
+      const table = document.createElement("table");
+      table.className = "table table-striped";
+
+      // Table header
+      table.innerHTML = `
+        <thead>
+          <tr>
+            <th>Order ID</th>
+            <th>Items</th>
+            <th>Total Amount</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+        </tbody>
+      `;
+
+      const tbody = table.querySelector("tbody");
+
+      // Populate table rows with order data
+      orders.forEach((order) => {
+        const row = document.createElement("tr");
+
+        // Get item names (assumes `order.items` is populated with item details)
+        const itemNames = order.items.map(item => item.name).join(", ");
+
+        row.innerHTML = `
+          <td>Order #${order._id.slice(-6)}</td>
+          <td>${itemNames}</td>
+          <td>$${order.totalAmount.toFixed(2)}</td>
+          <td>${order.status}</td>
+        `;
+
+        tbody.appendChild(row);
+      });
+
+      // Append the table to the order history element
+      orderHistoryElement.appendChild(table);
+    })
+    .catch((error) => {
+      console.error("Error fetching order history:", error);
+      document.getElementById("orderHistory").innerHTML = "<p>Failed to load order history. Please try again later.</p>";
+    });
+}
+// code for place oder functionality and view order history functionality end  here
+
 
 function generatePassword() {
   const password = Math.random().toString(36).slice(-8);

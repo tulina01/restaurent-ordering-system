@@ -308,27 +308,42 @@ async function sendWelcomeEmail(customerData) {
 
 
 
-
 // CRUD operations for Order
 app.get('/api/orders', async (req, res) => {
     try {
-        const orders = await Order.find().populate('customer').populate('items');
-        res.json(orders);
+      const customerId = req.query.customer; // Extract customer ID from query params
+      const query = customerId ? { customer: customerId } : {};
+      const orders = await Order.find(query).populate('customer').populate('items');
+      res.json(orders);
     } catch (error) {
-        res.status(500).json({ message: error.message });
+      res.status(500).json({ message: error.message });
     }
-});
+  });
+  
 
 app.post('/api/orders', async (req, res) => {
-    const order = new Order(req.body);
     try {
+        const { customer, items, totalAmount, status } = req.body;
+        
+        // Validate input
+        if (!customer || !items || !Array.isArray(items) || items.length === 0 || totalAmount === undefined || !status) {
+            return res.status(400).json({ message: "Invalid order data" });
+        }
+
+        const order = new Order({
+            customer,
+            items,
+            totalAmount,
+            status
+        });
+
         const newOrder = await order.save();
         res.status(201).json(newOrder);
     } catch (error) {
+        console.error("Error creating order:", error);
         res.status(400).json({ message: error.message });
     }
 });
-
 app.get('/api/orders/:id', async (req, res) => {
     try {
         const order = await Order.findById(req.params.id).populate('customer').populate('items');
@@ -358,6 +373,7 @@ app.delete('/api/orders/:id', async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 });
+
 
 // CRUD operations for Reservation
 app.get('/api/reservations', async (req, res) => {
