@@ -68,6 +68,21 @@ body {
   border-radius: 10px;
 }
 
+
+.section-container {
+  display: none;
+}
+.section-container.active {
+  display: block;
+}
+.nav-buttons .btn {
+  margin: 0 5px;
+}
+.reservation-form .form-control,
+.reservation-form .form-select {
+  margin-bottom: 1rem;
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
     .menu-card-img {

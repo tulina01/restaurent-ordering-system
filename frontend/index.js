@@ -411,3 +411,40 @@ function getCookie(name) {
 function deleteCookie(name) {
   document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/`;
 }
+
+
+// Navigation Toggle Logic
+const menuNavBtn = document.getElementById('menuNavBtn');
+const reservationNavBtn = document.getElementById('reservationNavBtn');
+const menuSection = document.getElementById('menuSection');
+const reservationSection = document.getElementById('reservationSection');
+
+// Navigation Button Event Listeners
+function resetNavButtons() {
+    [menuNavBtn, reservationNavBtn].forEach(btn => {
+        btn.classList.remove('btn-primary');
+        btn.classList.add('btn-outline-primary');
+    });
+}
+
+function hideAllSections() {
+    [menuSection, reservationSection].forEach(section => {
+        section.classList.remove('active');
+    });
+}
+
+menuNavBtn.addEventListener('click', () => {
+    resetNavButtons();
+    hideAllSections();
+    menuNavBtn.classList.remove('btn-outline-primary');
+    menuNavBtn.classList.add('btn-primary');
+    menuSection.classList.add('active');
+});
+
+reservationNavBtn.addEventListener('click', () => {
+    resetNavButtons();
+    hideAllSections();
+    reservationNavBtn.classList.remove('btn-outline-primary');
+    reservationNavBtn.classList.add('btn-primary');
+    reservationSection.classList.add('active');
+});
