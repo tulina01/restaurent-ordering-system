@@ -376,14 +376,27 @@ app.delete('/api/orders/:id', async (req, res) => {
 
 
 // CRUD operations for Reservation
+
+
+
 app.get('/api/reservations', async (req, res) => {
     try {
-        const reservations = await Reservation.find().populate('customer');
-        res.json(reservations);
+      const customerId = req.query.customer;
+  
+      // If a `customer` query parameter is provided, fetch reservations for that customer
+      if (customerId) {
+        const reservations = await Reservation.find({ customer: customerId });
+        return res.json(reservations);
+      }
+  
+      // If no `customer` query parameter, fetch all reservations and populate customer details
+      const reservations = await Reservation.find().populate('customer');
+      res.json(reservations);
     } catch (error) {
-        res.status(500).json({ message: error.message });
+      res.status(500).json({ message: error.message });
     }
-});
+  });
+  
 
 app.post('/api/reservations', async (req, res) => {
     const { customer, date, time, partySize, status } = req.body;

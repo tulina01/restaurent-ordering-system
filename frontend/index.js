@@ -10,6 +10,7 @@ document.addEventListener("DOMContentLoaded", () => {
     updatePlaceOrderButton();
     updateAuthButtons();
     updateOrderHistory();
+    updateReservationHistory();
   }
 
   fetchMenuItemsByCategory("Starters");
@@ -32,6 +33,9 @@ document.addEventListener("DOMContentLoaded", () => {
     document
     .getElementById("logoutBtn")
     .addEventListener("click", handleLogout);
+    document
+    .getElementById("reservationForm")
+    .addEventListener("submit", handleReservation);
 });
 
 function fetchMenuItemsByCategory(category) {
@@ -178,11 +182,13 @@ function handleLogin(event) {
         setCookie("currentUser", JSON.stringify(currentUser), 7);
         updateUserGreeting();
         updatePlaceOrderButton();
-        updateAuthButtons(); // Add this line
+        updateAuthButtons();
         updateOrderHistory();
-        bootstrap.Modal.getInstance(
-          document.getElementById("loginModal")
-        ).hide();
+        updateReservationHistory();
+        const loginModal = document.getElementById("loginModal");
+        if (loginModal) {
+          bootstrap.Modal.getInstance(loginModal).hide();
+        }
       } else {
         alert(data.message);
       }
@@ -198,7 +204,8 @@ function handleLogout() {
   deleteCookie("currentUser");
   updateUserGreeting();
   updatePlaceOrderButton();
-  updateAuthButtons(); 
+  updateAuthButtons();
+  updateReservationHistory();
   alert("You have been logged out.");
 }
 
@@ -413,6 +420,11 @@ function deleteCookie(name) {
 }
 
 
+
+
+
+// reservation funtionality start in here
+
 // Navigation Toggle Logic
 const menuNavBtn = document.getElementById('menuNavBtn');
 const reservationNavBtn = document.getElementById('reservationNavBtn');
@@ -448,3 +460,128 @@ reservationNavBtn.addEventListener('click', () => {
     reservationNavBtn.classList.add('btn-primary');
     reservationSection.classList.add('active');
 });
+
+
+// Add this function at the beginning of your script
+function safeQuerySelector(selector) {
+  return document.querySelector(selector) || { style: {} };
+}
+
+// Update the handleReservation function
+function handleReservation(event) {
+  event.preventDefault();
+  if (!currentUser) {
+    alert("Please log in to make a reservation.");
+    return;
+  }
+
+  const date = document.getElementById("reservationDate").value;
+  const time = document.getElementById("reservationTime").value;
+  const partySize = document.getElementById("partySize").value;
+
+  const reservationData = {
+    customer: currentUser._id,  
+    date: date,
+    time: time,
+    partySize: parseInt(partySize),
+    status: "Pending"
+  };
+
+  fetch("http://localhost:3000/api/reservations", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(reservationData),
+  })
+    .then((response) => {
+      if (!response.ok) {
+        return response.json().then(err => Promise.reject(err));
+      }
+      return response.json();
+    })
+    .then((data) => {
+      alert("Reservation made successfully!");
+      document.getElementById("reservationForm").reset();
+      updateReservationHistory();
+    })
+    .catch((error) => {
+      console.error("Error making reservation:", error);
+      alert("An error occurred while making your reservation: " + (error.message || "Please try again."));
+    });
+}
+
+// Update the updateReservationHistory function
+function updateReservationHistory() {
+  if (!currentUser) {
+    console.log("No user logged in. Cannot fetch reservation history.");
+    return;
+  }
+
+  fetch(`http://localhost:3000/api/reservations?customer=${currentUser._id}`)
+    .then((response) => response.json())
+    .then((reservations) => {
+      const reservationHistoryElement = safeQuerySelector("#reservationHistory");
+      const reservationHistoryCount = safeQuerySelector("#reservationHistoryCount");
+      const emptyReservationHistoryMessage = safeQuerySelector("#emptyReservationHistoryMessage");
+
+      reservationHistoryCount.textContent = reservations.length;
+
+      if (reservations.length === 0) {
+        emptyReservationHistoryMessage.style.display = "block";
+        reservationHistoryElement.innerHTML = "";
+        return;
+      }
+
+      emptyReservationHistoryMessage.style.display = "none";
+      
+      const table = document.createElement("table");
+      table.className = "table table-hover";
+      table.innerHTML = `
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Time</th>
+            <th>Party Size</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+        </tbody>
+      `;
+
+      const tbody = table.querySelector("tbody");
+
+      reservations.forEach((reservation) => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${new Date(reservation.date).toLocaleDateString()}</td>
+          <td>${reservation.time}</td>
+          <td>${reservation.partySize}</td>
+          <td><span class="badge bg-${getStatusColor(reservation.status)}">${reservation.status}</span></td>
+        `;
+        tbody.appendChild(row);
+      });
+
+      reservationHistoryElement.innerHTML = "";
+      reservationHistoryElement.appendChild(table);
+    })
+    .catch((error) => {
+      console.error("Error fetching reservation history:", error);
+      safeQuerySelector("#reservationHistory").innerHTML = "<p>Failed to load reservation history. Please try again later.</p>";
+    });
+}
+
+
+function getStatusColor(status) {
+  switch (status) {
+    case "Confirmed":
+      return "success";
+    case "Pending":
+      return "warning";
+    case "Cancelled":
+      return "danger";
+    default:
+      return "secondary";
+  }
+}
