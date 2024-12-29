@@ -102,7 +102,7 @@ function addToCart(item) {
   if (existingItem) {
     existingItem.quantity += 1;
   } else {
-    cart.push({ ...item, quantity: 1 });
+    cart.push({ ...item, quantity: 1 }); // Add the imageUrl to the item
   }
   updateCart();
 }
@@ -120,29 +120,40 @@ function updateCart() {
     total += itemTotal;
 
     cartItems.innerHTML += `
-              <div class="d-flex justify-content-between align-items-center mb-2">
-                  <div>
-                      <h6 class="mb-0">${item.name}</h6>
-                      <small class="text-muted">$${item.price.toFixed(
-                        2
-                      )} x ${item.quantity}</small>
-                  </div>
-                  <div>
-                      <span class="me-2">$${itemTotal.toFixed(2)}</span>
-                      <button class="btn btn-sm btn-outline-danger remove-from-cart" data-id="${
-                        item._id
-                      }">Remove</button>
-                  </div>
-              </div>
-          `;
+      <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-3">
+        <div class="d-flex align-items-center">
+          <!-- Display item image -->
+          <img src="${item.imageUrl}" alt="${item.name}" class="cart-item-image" style="width: 50px; height: 50px; object-fit: cover;" />
+          <div class="ms-3">
+            <h6 class="mb-0">${item.name}</h6>
+            <small class="text-muted">$${item.price.toFixed(2)} x ${item.quantity}</small>
+          </div>
+        </div>
+        <div class="d-flex align-items-center">
+          <!-- Quantity buttons -->
+          <button class="btn btn-sm btn-outline-secondary me-2" data-id="${item._id}" onclick="updateQuantity('${item._id}', -1)">
+            <i class="bi bi-dash"></i>
+          </button>
+          <span class="me-2 fw-semibold">${item.quantity}</span>
+          <button class="btn btn-sm btn-outline-secondary" data-id="${item._id}" onclick="updateQuantity('${item._id}', 1)">
+            <i class="bi bi-plus"></i>
+          </button>
+          <!-- Total price per item -->
+          <span class="me-3 ms-2 fw-semibold">$${itemTotal.toFixed(2)}</span>
+          <!-- Remove button -->
+          <button class="btn btn-sm btn-outline-danger remove-from-cart" data-id="${item._id}">
+            <i class="bi bi-trash"></i> Remove
+          </button>
+        </div>
+      </div>
+    `;
   });
 
-  cartCount.textContent = cart.reduce(
-    (sum, item) => sum + item.quantity,
-    0
-  );
+  // Update cart item count and total price
+  cartCount.textContent = cart.reduce((sum, item) => sum + item.quantity, 0);
   cartTotal.textContent = total.toFixed(2);
 
+  // Add event listeners for removing items from the cart
   cartItems.querySelectorAll(".remove-from-cart").forEach((button) => {
     button.addEventListener("click", function () {
       const itemId = this.getAttribute("data-id");
@@ -152,6 +163,22 @@ function updateCart() {
 
   updatePlaceOrderButton();
 }
+
+
+
+
+function updateQuantity(itemId, change) {
+  const item = cart.find((cartItem) => cartItem._id === itemId);
+  if (item) {
+    item.quantity += change;
+    if (item.quantity <= 0) {
+      removeFromCart(itemId);
+    } else {
+      updateCart();
+    }
+  }
+}
+
 
 function removeFromCart(itemId) {
   cart = cart.filter((item) => item._id !== itemId);
