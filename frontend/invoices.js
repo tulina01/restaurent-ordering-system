@@ -1,14 +1,48 @@
 document.addEventListener('DOMContentLoaded', () => {
     fetchInvoices();
     fetchSuppliers();
-    document.getElementById('createForm').addEventListener('submit', createInvoice);
-    document.getElementById('updateForm').addEventListener('submit', updateInvoice);
-    document.getElementById('cancelUpdate').addEventListener('click', cancelUpdate);
-    document.getElementById('addItemBtn').addEventListener('click', addItemField);
-    document.getElementById('updateAddItemBtn').addEventListener('click', addUpdateItemField);
-  
-    
+
+    const createForm = document.getElementById('createForm');
+    const updateForm = document.getElementById('updateForm');
+    const cancelUpdateButton = document.getElementById('cancelUpdate');
+    const addItemBtn = document.getElementById('addItemBtn');
+    const updateAddItemBtn = document.getElementById('updateAddItemBtn');
+
+    if (createForm) createForm.addEventListener('submit', createInvoice);
+    if (updateForm) updateForm.addEventListener('submit', updateInvoice);
+    if (cancelUpdateButton) cancelUpdateButton.addEventListener('click', cancelUpdate);
+    if (addItemBtn) addItemBtn.addEventListener('click', () => addItemField('itemsContainer'));
+    if (updateAddItemBtn) updateAddItemBtn.addEventListener('click', () => addItemField('updateItemsContainer', 'update'));
 });
+
+function addItemField(containerId, prefix = '') {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+
+    const index = container.children.length;
+    const itemRow = document.createElement('div');
+    itemRow.classList.add('row', 'mb-2');
+    itemRow.innerHTML = `
+        <div class="col">
+            <input type="text" class="form-control" id="${prefix}ItemName${index}" placeholder="Item Name" required>
+        </div>
+        <div class="col">
+            <input type="number" class="form-control" id="${prefix}ItemQuantity${index}" placeholder="Quantity" required>
+        </div>
+        <div class="col">
+            <input type="number" step="0.01" class="form-control" id="${prefix}ItemPrice${index}" placeholder="Price" required>
+        </div>
+        <div class="col-auto">
+            <button type="button" class="btn btn-danger remove-item-btn">Remove</button>
+        </div>
+    `;
+    container.appendChild(itemRow);
+
+    const removeButton = itemRow.querySelector('.remove-item-btn');
+    if (removeButton) {
+        removeButton.addEventListener('click', () => itemRow.remove());
+    }
+}
 
 function fetchInvoices() {
     fetch('http://localhost:3000/api/invoices')
@@ -40,13 +74,12 @@ function createInvoiceRow(invoice) {
         <td>${invoice.status || 'N/A'}</td>
         <td>${itemsHtml}</td>
         <td>
-            <button class="btn btn-sm btn-outline-primary" onclick="showUpdateForm('${invoice._id}')">  <i class="fas fa-edit"></i></button>
-            <button class="btn btn-sm btn-outline-danger" onclick="deleteInvoice('${invoice._id}')"> <i class="fas fa-trash"></i></button>
+            <button class="btn btn-sm btn-outline-primary" onclick="showUpdateForm('${invoice._id}')"><i class="fas fa-edit"></i></button>
+            <button class="btn btn-sm btn-outline-danger" onclick="deleteInvoice('${invoice._id}')"><i class="fas fa-trash"></i></button>
         </td>
     `;
     return row;
 }
-
 
 function fetchSuppliers() {
     fetch('http://localhost:3000/api/suppliers')
@@ -66,6 +99,41 @@ function fetchSuppliers() {
         .catch(error => console.error('Error fetching suppliers:', error));
 }
 
+function getItemsFromForm(containerId, prefix = '') {
+    const container = document.getElementById(containerId);
+    const items = [];
+
+    if (!container) {
+        console.error(`Container with ID "${containerId}" not found.`);
+        return items;
+    }
+
+    for (let i = 0; i < container.children.length; i++) {
+        const nameElement = document.getElementById(`${prefix}ItemName${i}`);
+        const quantityElement = document.getElementById(`${prefix}ItemQuantity${i}`);
+        const priceElement = document.getElementById(`${prefix}ItemPrice${i}`);
+
+        if (!nameElement || !quantityElement || !priceElement) {
+            console.warn(`Missing input elements for item ${i}.`);
+            continue;
+        }
+
+        const name = nameElement.value.trim();
+        const quantity = parseInt(quantityElement.value.trim(), 10);
+        const price = parseFloat(priceElement.value.trim());
+
+        if (name && !isNaN(quantity) && !isNaN(price)) {
+            items.push({ name, quantity, price });
+        }
+    }
+
+    if (items.length === 0) {
+        alert('Please add at least one item.');
+    }
+
+    return items;
+}
+
 function createInvoice(event) {
     event.preventDefault();
     const supplier = document.getElementById('supplier').value;
@@ -74,17 +142,11 @@ function createInvoice(event) {
     const status = document.getElementById('status').value;
     const items = getItemsFromForm('itemsContainer');
 
-    if (items.length === 0) {
-        return; // Exit if no items are present
-    }
-
-    console.log('Creating invoice with items:', items); // Debug log
+    if (items.length === 0) return;
 
     fetch('http://localhost:3000/api/invoices', {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ supplier, date, totalAmount, status, items }),
     })
     .then(response => response.json())
@@ -97,7 +159,6 @@ function createInvoice(event) {
     })
     .catch(error => console.error('Error creating invoice:', error));
 }
-
 
 function showUpdateForm(id) {
     fetch(`http://localhost:3000/api/invoices/${id}`)
@@ -113,22 +174,19 @@ function showUpdateForm(id) {
             updateItemsContainer.innerHTML = '';
             if (invoice.items && invoice.items.length > 0) {
                 invoice.items.forEach((item, index) => {
-                    addUpdateItemField();
+                    addItemField('updateItemsContainer', 'update');
                     document.getElementById(`updateItemName${index}`).value = item.name;
                     document.getElementById(`updateItemQuantity${index}`).value = item.quantity;
                     document.getElementById(`updateItemPrice${index}`).value = item.price;
                 });
             } else {
-                addUpdateItemField(); // Add at least one item field if there are no items
+                addItemField('updateItemsContainer', 'update');
             }
             
-            // Show the modal
-            var updateModal = new bootstrap.Modal(document.getElementById('updateModal'));
-            updateModal.show();
+            new bootstrap.Modal(document.getElementById('updateModal')).show();
         })
         .catch(error => console.error('Error fetching invoice:', error));
 }
-
 
 function updateInvoice(event) {
     event.preventDefault();
@@ -137,9 +195,8 @@ function updateInvoice(event) {
     const date = document.getElementById('updateDate').value;
     const totalAmount = document.getElementById('updateTotalAmount').value;
     const status = document.getElementById('updateStatus').value;
-    const items = getItemsFromForm('updateItemsContainer', 'update'); // Fetch items
+    const items = getItemsFromForm('updateItemsContainer', 'update');
 
-    // Ensure items array is correctly formed
     if (!items.length) {
         alert("Items cannot be empty! Add at least one item.");
         return;
@@ -147,36 +204,31 @@ function updateInvoice(event) {
 
     fetch(`http://localhost:3000/api/invoices/${id}`, {
         method: 'PUT',
-        headers: {
-            'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ supplier, date, totalAmount, status, items }),
     })
-        .then(response => response.json())
-        .then(updatedInvoice => {
-            const row = document.querySelector(`tr[data-id="${id}"]`);
-            if (row) {
-                row.replaceWith(createInvoiceRow(updatedInvoice));
-            } else {
-                fetchInvoices(); // Refresh if row not found
-            }
-            cancelUpdate();
-        })
-        .catch(error => console.error('Error updating invoice:', error));
+    .then(response => response.json())
+    .then(updatedInvoice => {
+        const row = document.querySelector(`tr[data-id="${id}"]`);
+        if (row) {
+            row.replaceWith(createInvoiceRow(updatedInvoice));
+        } else {
+            fetchInvoices();
+        }
+        cancelUpdate();
+    })
+    .catch(error => console.error('Error updating invoice:', error));
 }
-
 
 function deleteInvoice(id) {
     if (confirm('Are you sure you want to delete this invoice?')) {
-        fetch(`http://localhost:3000/api/invoices/${id}`, {
-            method: 'DELETE',
-        })
+        fetch(`http://localhost:3000/api/invoices/${id}`, { method: 'DELETE' })
         .then(() => {
             const row = document.querySelector(`tr[data-id="${id}"]`);
             if (row) {
                 row.remove();
             } else {
-                fetchInvoices(); // Fallback to re-fetching all invoices if row not found
+                fetchInvoices();
             }
         })
         .catch(error => console.error('Error deleting invoice:', error));
@@ -186,154 +238,5 @@ function deleteInvoice(id) {
 function cancelUpdate() {
     document.getElementById('updateForm').reset();
     document.getElementById('updateItemsContainer').innerHTML = '';
-    var updateModal = bootstrap.Modal.getInstance(document.getElementById('updateModal'));
-    updateModal.hide();
+    bootstrap.Modal.getInstance(document.getElementById('updateModal')).hide();
 }
-
-
-
-function addUpdateItemField() {
-    const container = document.getElementById('updateItemsContainer');
-    const index = container.children.length;
-    const itemField = document.createElement('div');
-    itemField.innerHTML = `
-        <input type="text" id="updateItemName${index}" placeholder="Item Name" required>
-        <input type="number" id="updateItemQuantity${index}" placeholder="Quantity" required>
-        <input type="number" id="updateItemPrice${index}" placeholder="Price" step="0.01" required>
-    `;
-    container.appendChild(itemField);
-}
-
-
-function getItemsFromForm(containerId, prefix = '') {
-    const container = document.getElementById(containerId);
-    const items = [];
-
-    if (!container) {
-        console.error(`Container with ID "${containerId}" not found.`);
-        return items;
-    }
-
-    for (let i = 0; i < container.children.length; i++) {
-        const nameElement = document.getElementById(`${prefix}ItemName${i}`);
-        const quantityElement = document.getElementById(`${prefix}ItemQuantity${i}`);
-        const priceElement = document.getElementById(`${prefix}ItemPrice${i}`);
-
-        // Debugging: Check if elements exist
-        if (!nameElement || !quantityElement || !priceElement) {
-            console.warn(`Missing input elements for item ${i}.`);
-            continue;
-        }
-
-        const name = nameElement.value.trim();
-        const quantity = parseInt(quantityElement.value.trim(), 10);
-        const price = parseFloat(priceElement.value.trim());
-
-        // Debugging: Check parsed values
-        console.log(`Item ${i}:`, { name, quantity, price });
-
-        if (name && !isNaN(quantity) && !isNaN(price)) {
-            items.push({ name, quantity, price });
-        }
-    }
-
-    if (items.length === 0) {
-        alert('Please add at least one item.');
-    }
-
-    return items;
-}
-
-
-document.addEventListener('DOMContentLoaded', () => {
-    const itemsContainer = document.getElementById('itemsContainer');
-    const addItemBtn = document.getElementById('addItemBtn');
-    const createForm = document.getElementById('createForm');
-
-    let itemCount = 0; // To track the number of items dynamically
-
-    // Add a new item row to the container
-    addItemBtn.addEventListener('click', () => {
-        const itemRow = document.createElement('div');
-        itemRow.classList.add('row', 'mb-2');
-
-        itemRow.innerHTML = `
-            <div class="col">
-                <input type="text" class="form-control" id="ItemName${itemCount}" placeholder="Item Name" required>
-            </div>
-            <div class="col">
-                <input type="number" class="form-control" id="ItemQuantity${itemCount}" placeholder="Quantity" required>
-            </div>
-            <div class="col">
-                <input type="number" step="0.01" class="form-control" id="ItemPrice${itemCount}" placeholder="Price" required>
-            </div>
-            <div class="col-auto">
-                <button type="button" class="btn btn-danger remove-item-btn">Remove</button>
-            </div>
-        `;
-
-        itemsContainer.appendChild(itemRow);
-        itemCount++;
-
-        // Add event listener to remove this row
-        itemRow.querySelector('.remove-item-btn').addEventListener('click', () => {
-            itemRow.remove();
-        });
-    });
-
-    // Collect items from the form
-    function getItemsFromForm(container) {
-        const items = [];
-        const rows = container.querySelectorAll('.row');
-
-        rows.forEach((row, index) => {
-            const name = row.querySelector(`#ItemName${index}`).value.trim();
-            const quantity = parseInt(row.querySelector(`#ItemQuantity${index}`).value.trim(), 10);
-            const price = parseFloat(row.querySelector(`#ItemPrice${index}`).value.trim());
-
-            if (name && !isNaN(quantity) && !isNaN(price)) {
-                items.push({ name, quantity, price });
-            }
-        });
-
-        return items;
-    }
-
-    // Handle form submission
-    createForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-
-        const supplier = document.getElementById('supplier').value;
-        const date = document.getElementById('date').value;
-        const totalAmount = parseFloat(document.getElementById('totalAmount').value);
-        const status = document.getElementById('status').value;
-
-        // Get items
-        const items = getItemsFromForm(itemsContainer);
-
-        if (items.length === 0) {
-            alert('Please add at least one item.');
-            return;
-        }
-
-        // Construct the invoice object
-        const invoice = {
-            supplier,
-            date,
-            totalAmount,
-            status,
-            items
-        };
-
-        console.log('New Invoice:', invoice);
-
-        // Clear the form after submission
-        createForm.reset();
-        itemsContainer.innerHTML = '';
-        itemCount = 0;
-
-        // Optionally add the new invoice to a table or database here
-    });
-});
-
-

@@ -200,13 +200,22 @@ function handleLogin(event) {
 }
 
 function handleLogout() {
-  currentUser = null;
-  deleteCookie("currentUser");
-  updateUserGreeting();
-  updatePlaceOrderButton();
-  updateAuthButtons();
-  updateReservationHistory();
-  alert("You have been logged out.");
+  // Display a confirmation message
+  const confirmLogout = window.confirm("Are you sure you want to logout? Your session will be ended");
+  
+  if (confirmLogout) {
+    // Perform the logout process
+    currentUser = null;
+    deleteCookie("currentUser");
+    updateUserGreeting();
+    updatePlaceOrderButton();
+    updateAuthButtons();
+    updateReservationHistory();
+    
+    // Show a logout message and refresh the page
+    alert("You have been logged out.");
+    location.reload(); // Refresh the page
+  }
 }
 
 

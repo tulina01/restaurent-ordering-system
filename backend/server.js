@@ -270,7 +270,7 @@ const transporter = nodemailer.createTransport({
     service: 'gmail',  // or your preferred email service
     auth: {
         user: 'managementsystem56@gmail.com', // your email
-        pass: '' // your app-specific password
+        pass: 'aqqu rcqv hjmr oghk' // your app-specific password
     }
 });
 
