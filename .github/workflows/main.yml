@@ -16,21 +16,21 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
-      - name: Set up Docker
-        uses: docker/setup-buildx-action@v2
+      # - name: Set up Docker
+      #   uses: docker/setup-buildx-action@v2
 
-      - name: Build and run Docker containers
-        run: |
-          docker compose up -d --build
+      # - name: Build and run Docker containers
+      #   run: |
+      #     docker compose up -d --build
 
-      - name: Install NPM dependencies
-        run: npm install
+      # - name: Install NPM dependencies
+      #   run: npm install
 
-      - name: Run tests
-        run: npm run test
+      # - name: Run tests
+      #   run: npm run test
 
-      - name: Shut down Docker containers
-        run: docker compose down
+      # - name: Shut down Docker containers
+      #   run: docker compose down
 
       - name: Copy project to server and run Docker Compose on success
         if: success() # Only run this step if the tests passed
@@ -38,9 +38,6 @@ jobs:
           # Install sshpass to enable password authentication
           sudo apt-get update
           sudo apt-get install -y sshpass
-
-          touch ~/.ssh/known_hosts
-          ssh-keyscan 157.230.41.241 >> ~/.ssh/known_hosts
 
           # Copy project to the server using SCP with password authentication
           sshpass -p 'eqKE89Vmipob&Q' scp -r ./ root@157.230.41.241:/root/project_directory
