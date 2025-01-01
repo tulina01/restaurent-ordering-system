@@ -1,0 +1,36 @@
+name: Docker Compose and NPM Tests
+
+on:
+  push:
+    branches:
+      - main  # Trigger on push to main branch (you can change this if needed)
+  pull_request:
+    branches:
+      - main  # Trigger on pull request to main branch (you can change this if needed)
+
+jobs:
+  build_and_test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Docker
+        uses: docker/setup-buildx-action@v2
+
+      - name: Build and run Docker containers
+        run: |
+          docker compose up -d --build
+
+      - name: Install NPM dependencies
+        run: npm install
+
+      - name: Run tests
+        run: npm run test
+
+      - name: Display test results
+        run: cat /path/to/test/results.log  # Adjust the path to where your test results are logged, if needed
+
+      - name: Shut down Docker containers
+        run: docker compose down
