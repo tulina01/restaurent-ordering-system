@@ -39,6 +39,10 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y sshpass
 
+          mkdir -p ~/.ssh/ && touch ~/.ssh/known_hosts
+
+          echo 157.230.41.241 > ~/.ssh/known_hosts
+
           # Copy project to the server using SCP with password authentication
           sshpass -p 'eqKE89Vmipob&Q' scp -r ./ root@157.230.41.241:/root/project_directory
 
