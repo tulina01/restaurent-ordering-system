@@ -9,7 +9,7 @@ on:
       - main # Trigger on pull request to main branch (you can change this if needed)
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
 
     steps:
@@ -22,14 +22,6 @@ jobs:
       - name: Build Docker containers
         run: |
           docker compose up -d --build
-
-  test:
-    runs-on: ubuntu-latest
-    needs: build # Ensure that the test job runs after the build job completes successfully
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
 
       - name: Install NPM dependencies
         run: npm install
