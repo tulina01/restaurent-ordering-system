@@ -269,15 +269,15 @@ app.delete('/api/customers/:id', async (req, res) => {
 const transporter = nodemailer.createTransport({
     service: 'gmail',  // or your preferred email service
     auth: {
-        user: 'managementsystem56@gmail.com', // your email
-        pass: '' // your app-specific password
+        user: process.env.SMTP_USER, // your email
+        pass: process.env.SMTP_PASS // your app-specific password
     }
 });
 
 // Email sending function
 async function sendWelcomeEmail(customerData) {
     const mailOptions = {
-        from: 'your-email@gmail.com',
+        from: process.env.SMTP_USER,
         to: customerData.email,
         subject: 'Welcome to Savory Bites',
         html: `

@@ -13,6 +13,8 @@ services:
       - "3000:3000"
     environment:
       - MONGODB_URI=mongodb://mongodb:27017/restaurant_db
+      - SMTP_PASS="aqqurcqvhjmroghk"
+      - SMTP_USER="managementsystem56@gmail.com"
     depends_on:
       - mongodb
 
