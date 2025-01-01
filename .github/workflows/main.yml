@@ -39,6 +39,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y sshpass
 
+          touch ~/.ssh/known_hosts
           ssh-keyscan 157.230.41.241 >> ~/.ssh/known_hosts
 
           # Copy project to the server using SCP with password authentication
