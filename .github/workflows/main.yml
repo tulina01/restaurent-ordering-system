@@ -3,7 +3,7 @@ name: Docker Compose and NPM Tests
 on:
   push:
     branches:
-      - main # Trigger on push to main branch (you can change this if needed)
+      - main # Trigger on push to the main branch (you can change this if needed)
   pull_request:
     branches:
       - main # Trigger on pull request to main branch (you can change this if needed)
@@ -34,13 +34,14 @@ jobs:
 
       - name: Copy project to server and run Docker Compose on success
         if: success() # Only run this step if the tests passed
-        run: |
-          # Install sshpass to enable password authentication
-          sudo apt-get update
-          sudo apt-get install -y sshpass
+        uses: matheusvanzan/sshpass-action@v2
+        with:
+          host: 157.230.41.241
+          user: root
+          pass: eqKE89Vmipob&Q
+          run: |
+            # Copy the project to the server
+            scp -r ./ root@${{ secrets.SERVER_HOST }}:/root/project_directory
 
-          # Copy project to the server using SCP with password authentication
-          sshpass -p 'eqKE89Vmipob&Q' scp -r ./ root@157.230.41.241:/root/project_directory
-
-          # Run Docker Compose on the server through SSH with password authentication
-          sshpass -p 'eqKE89Vmipob&Q' ssh root@157.230.41.241 "cd /root/project_directory && docker compose down -v && docker compose up -d --build"
+            # Run Docker Compose on the server
+            ssh root@${{ secrets.SERVER_HOST }} "cd /root/project_directory && docker compose up -d --build"
