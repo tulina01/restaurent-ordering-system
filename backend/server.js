@@ -21,7 +21,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 
 
-mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true });
+mongoose.connect(process.env.MONGODB_URI || "mongodb://mongodb:27017/restaurant_db", { useNewUrlParser: true, useUnifiedTopology: true });
 
 // Define schemas and models for each entity
 const menuItemSchema = new mongoose.Schema({
@@ -175,7 +175,7 @@ app.get('/api/menu-items/:id', async (req, res) => {
         }
         res.json(menuItem);
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        res.status(404).json({ message: error.message });
     }
 });
 
